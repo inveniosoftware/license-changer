@@ -17,13 +17,15 @@ import fileinput
 import os
 import re
 import subprocess
+from collections import defaultdict
 
 
 LICENSE_OLD_START = {
     'python': '# Invenio is free software; you can redistribute it',
     'rst': """..
     This file is part of Invenio.""",
-    'js': ' * Invenio is free software; you can redistribute'
+    'js': ' * Invenio is free software; you can redistribute',
+    'html': '<!-- Copyright (C) '
 }
 
 LICENSE_NEW_CODE = 'MIT'
@@ -33,6 +35,14 @@ LICENSE_NEW_TROVE = 'License :: OSI Approved :: MIT License'
 LICENSE_NEW_INFILE = """\
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details."""
+
+LICENSE_NEW_FULLHEADER_JINJA = """-*- coding: utf-8 -*-
+
+  This file is part of Invenio.
+  Copyright (C) {date} CERN.
+
+  Invenio is free software; you can redistribute it and/or modify it
+  under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_INFILE_JS = """\
  * Invenio is free software; you can redistribute it and/or modify it
@@ -141,6 +151,29 @@ def change_license_for_rst_file(filename):
                 else:
                     # ignore empty lines immediately after copyright
                     pass
+
+
+def change_license_for_jinja_file(filename):
+    "Add license header for *.html files that are jinja templates."
+    print('[INFO] Changing file', filename)
+
+    with open(filename, 'r') as fp:
+        content = fp.read()
+    if content.startswith('{#'):
+        end = content.find('#}')
+        body = content[end+3:]
+    else:
+        body = content
+
+    years = get_commit_years(filename)
+    lo, hi = max(min(years), '2015'), '2018'
+    date = lo + '-' + hi if lo != hi else hi
+    import ipdb; ipdb.set_trace()
+    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(date=date) + '\n#}\n'
+    out += body
+    with open(filename, 'w') as fp:
+        fp.write(out)
+    return True
 
 
 def change_license_for_js_file(filename):
@@ -256,7 +289,7 @@ def main(filename):
     elif filename_basename == 'license.rst':
         change_license_for_docslicenserst_file(filename)
     else:
-        dummy, extension = os.path.splitext(filename)
+        path_prefix, extension = os.path.splitext(filename)
         if extension in ('.po', '.png', '.svg', '.gif', '.jpeg'):
             do_not_change_license(filename)
         elif extension in ('.rst', ):
@@ -266,6 +299,13 @@ def main(filename):
             if need_to_process(filename, 'js'):
                 if change_license_for_js_file(filename):
                     update_copyright_years(filename, pattern=YEARS_RE_PATTERN_JS)
+        elif extension in ('.html', ) and ('src' in path_prefix or 'static' in path_prefix):
+            # Add HTML-style comments
+            if need_to_process(filename, 'html'):
+                pass
+        elif extension in ('.html', ) and ('src' not in path_prefix) and ('static' not in path_prefix) and 'templates' in path_prefix:
+            # Add Jinja-style comments
+            change_license_for_jinja_file(filename)
         else:
             # we assume Python-style by default
             if need_to_process(filename, 'python'):
