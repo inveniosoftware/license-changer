@@ -22,7 +22,8 @@ import subprocess
 LICENSE_OLD_START = {
     'python': '# Invenio is free software; you can redistribute it',
     'rst': """..
-    This file is part of Invenio."""
+    This file is part of Invenio.""",
+    'js': ' * Invenio is free software; you can redistribute'
 }
 
 LICENSE_NEW_CODE = 'MIT'
@@ -32,6 +33,10 @@ LICENSE_NEW_TROVE = 'License :: OSI Approved :: MIT License'
 LICENSE_NEW_INFILE = """\
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details."""
+
+LICENSE_NEW_INFILE_JS = """\
+ * Invenio is free software; you can redistribute it and/or modify it
+ * under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_HEADER = """\
 MIT License
@@ -59,6 +64,9 @@ In applying this license, CERN does not waive the privileges and immunities
 granted to it by virtue of its status as an Intergovernmental Organization or
 submit itself to any jurisdiction.
 """
+
+YEARS_RE_PATTERN_PYTHON = r'^(.*# Copyright \(C\).* )([0-9]+) (CERN.*)$'
+YEARS_RE_PATTERN_JS = r'^(.* \* Copyright \(C\).* )([0-9]+) (CERN.*)$'
 
 
 def get_commit_years(filename):
@@ -135,6 +143,30 @@ def change_license_for_rst_file(filename):
                     pass
 
 
+def change_license_for_js_file(filename):
+    "Change license for *.js files. Return True if filename was touched."
+    style = 'js'
+    license_block_p = False
+    filename_touched_p = False
+    print('[INFO] Changing file', filename)
+    for line in fileinput.input(filename, inplace=True):
+        line = line.rstrip()
+        if not license_block_p:
+            if LICENSE_OLD_START[style] in line:
+                license_block_p = True
+            else:
+                print(line)
+        else:
+            if line.startswith(' *') and not line.startswith(' */'):
+                pass
+            else:
+                license_block_p = False
+                print(LICENSE_NEW_INFILE_JS)
+                print(line)
+                filename_touched_p = True
+    return filename_touched_p
+
+
 def change_license_for_python_file(filename):
     "Change license for *.py files. Return True if filename was touched."
     style = 'python'
@@ -159,12 +191,12 @@ def change_license_for_python_file(filename):
     return filename_touched_p
 
 
-def update_copyright_years(filename):
+def update_copyright_years(filename, pattern=YEARS_RE_PATTERN_PYTHON):
     "Update copyright year list for filename if the current year is not listed."
     current_year = str(datetime.date.today().year)
     for line in fileinput.input(filename, inplace=True):
         line = line.rstrip()
-        match = re.match(r'^(.*# Copyright \(C\).* )([0-9]+) (CERN.*)$', line)
+        match = re.match(pattern, line)
         if match:
             leader, year, trailer = match.groups()
             if year != current_year:
@@ -212,6 +244,10 @@ def main(filename):
         elif extension in ('.rst', ):
             if need_to_process(filename, 'rst'):
                 change_license_for_rst_file(filename)
+        elif extension in ('.js', '.scss', ):
+            if need_to_process(filename, 'js'):
+                if change_license_for_js_file(filename):
+                    update_copyright_years(filename, pattern=YEARS_RE_PATTERN_JS)
         else:
             # we assume Python-style by default
             if need_to_process(filename, 'python'):
