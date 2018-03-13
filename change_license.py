@@ -62,7 +62,7 @@ LICENSE_NEW_FULLHEADER_JS = """/*
 
 LICENSE_NEW_FULLHEADER_HTML = """<!--
   This file is part of Invenio.
-  Copyright (C) 2015-2018 CERN.
+  Copyright (C) {years} CERN.
 
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
@@ -116,7 +116,8 @@ FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) *)(?P<first_year>[0-9]+).*'
 def get_commit_years(filename):
     """Return commit years for filename.
 
-    Use '.' for the whole git repository."""
+    Use '.' for the whole git repository.
+    """
     years = {}
     out = subprocess.getoutput('git log --follow --date=short --pretty=format:"%cd" -- ' + filename)
     if out:
@@ -154,7 +155,7 @@ def get_years_string_from_file(filename, **kwargs):
 
 
 def change_license_for_LICENSE_file(filename):
-    "Change license for LICENSE file. Special treatment."
+    """Change license for LICENSE file. Special treatment."""
     fdesc = open(filename, 'w')
     fdesc.write(LICENSE_NEW_HEADER)
     fdesc.write('\n')
@@ -165,7 +166,7 @@ def change_license_for_LICENSE_file(filename):
 
 
 def change_license_for_docslicenserst_file(filename):
-    "Change license for docs/license.rst file. Special treatment."
+    """Change license for docs/license.rst file. Special treatment."""
     fdesc = open(filename, 'w')
     fdesc.write('License\n')
     fdesc.write('=======\n\n')
@@ -215,8 +216,6 @@ def change_license_for_rst_file(filename):
 
 def change_license_for_rst_content(text, years=None):
     """Remove the license header from RST files."""
-
-    #old_content = open(filename, 'r').read()
     # detect license block end:
     license_block_end = 'submit itself to any jurisdiction.'
     if license_block_end in text:
@@ -230,7 +229,6 @@ def change_license_for_rst_content(text, years=None):
     # update the file until license block end:
     license_block_p = True
     main_content_p = False
-    #print('[INFO] Changing file', filename)
     new_output = []
     for line in text.split('\n'):
         line = line.rstrip()
@@ -253,6 +251,10 @@ def change_license_for_rst_content(text, years=None):
 def change_license_in_block_comment(text, years='2015-2018', filetype='js',
         start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS):
     """Generic license swapper for block-comment headers: HTML, JS or Jinja."""
+    # Try to fetch the first copyright year from an existing header file
+    # If it's not there, fall-back to the default
+    year = get_first_year_from_file(text)
+    years = get_years_string(year) if year else years
     end = 0
     if text.startswith(start_str):
         end = text.find(end_str)
