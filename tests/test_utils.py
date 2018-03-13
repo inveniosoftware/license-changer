@@ -1,5 +1,5 @@
 """Utility functions tests."""
-from change_license import get_years_string
+from change_license import get_years_string, find_prefix_suffix
 import datetime
 
 
@@ -18,3 +18,21 @@ def test_years_string_formatter():
         '2019-2020'
     assert get_years_string('2012', lower_year='2013', upper_year='2020') == \
         '2013-2020'
+
+
+def test_find_prefix_suffix():
+    start, end = '<!--', '-->'
+    inside = 'GPL'
+
+    t1 = '<!-- test -->stuff<!-- GPL -->morestuff'
+    pref_suff = find_prefix_suffix(t1, start, end, inside)
+    assert pref_suff == ('<!-- test -->stuff', 'morestuff')
+    assert find_prefix_suffix('', start, end, inside) == None
+    assert find_prefix_suffix('text but no tags', start, end, inside) == None
+    assert find_prefix_suffix('<!-- tags but no inside word -->', start, end, inside) == None
+    assert find_prefix_suffix('<!--GPL-->', start, end, inside) == ('', '')
+    assert find_prefix_suffix('<!-- foo --> GPL outside tags', start, end, inside) == None
+    assert find_prefix_suffix('GPL before tags <!-- foo -->', start, end, inside) == None
+    assert find_prefix_suffix('<!-- GPL', start, end, inside) == None
+    assert find_prefix_suffix('<!---->GPL -->', start, end, inside) == None
+    assert find_prefix_suffix('<!--x--><!-- GPL --><!--y-->', start, end, inside) == ('<!--x-->', '<!--y-->')
