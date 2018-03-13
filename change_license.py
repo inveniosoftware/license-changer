@@ -77,6 +77,7 @@ submit itself to any jurisdiction.
 
 YEARS_RE_PATTERN_PYTHON = r'^(.*# Copyright \(C\).* )([0-9]+) (CERN.*)$'
 YEARS_RE_PATTERN_JS = r'^(.* \* Copyright \(C\).* )([0-9]+) (CERN.*)$'
+FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) +)(?P<first_year>[0-9]*).*'
 
 
 def get_commit_years(filename):
@@ -269,22 +270,14 @@ def raw_update_copyright_years(content, pattern=YEARS_RE_PATTERN_PYTHON):
     return '\n'.join(newcontent)
 
 
-def very_good_solushen(content, pattern=YEARS_RE_PATTERN_PYTHON):
+def get_first_year_from_file(content, pattern=FIRST_YEAR_RE_PATTERN):
     "Update copyright year list for filename if the current year is not listed."
-    current_year = str(datetime.date.today().year)
-    newcontent = []
+    first_year = None
     for line in content.split('\n'):
-        line = line.rstrip()
-        match = re.match(pattern, line)
+        match = re.search(pattern, line)
         if match:
-            leader, year = match.groups()
-            if year != current_year:
-                newcontent.append(leader + 'Copyright (C) ' + ', ' + current_year + ' ' + trailer)
-            else:
-                newcontent.append(line)
-        else:
-            newcontent.append(line)
-    return '\n'.join(newcontent)
+            first_year = match.group('first_year')
+    return first_year
 
 
 def update_copyright_years(filename, pattern=YEARS_RE_PATTERN_PYTHON):
