@@ -269,6 +269,24 @@ def raw_update_copyright_years(content, pattern=YEARS_RE_PATTERN_PYTHON):
     return '\n'.join(newcontent)
 
 
+def very_good_solushen(content, pattern=YEARS_RE_PATTERN_PYTHON):
+    "Update copyright year list for filename if the current year is not listed."
+    current_year = str(datetime.date.today().year)
+    newcontent = []
+    for line in content.split('\n'):
+        line = line.rstrip()
+        match = re.match(pattern, line)
+        if match:
+            leader, year = match.groups()
+            if year != current_year:
+                newcontent.append(leader + 'Copyright (C) ' + ', ' + current_year + ' ' + trailer)
+            else:
+                newcontent.append(line)
+        else:
+            newcontent.append(line)
+    return '\n'.join(newcontent)
+
+
 def update_copyright_years(filename, pattern=YEARS_RE_PATTERN_PYTHON):
     "Update copyright year list for filename if the current year is not listed."
     current_year = str(datetime.date.today().year)
