@@ -11,7 +11,17 @@ def example_contents():
         'jinja': [
             ('jinja_1.html', 'jinja_1.out.html'),
             ('jinja_2.html', 'jinja_2.out.html'),
-        ]
+        ],
+        'js': [
+            ('js_1.js', 'js_1.out.js'),
+        ],
+        'html': [
+            ('html_1.html', 'html_1.out.html'),
+        ],
+        'rst': [
+            ('rst_1.rst', 'rst_1.out.rst'),
+            ('rst_2.rst', 'rst_2.out.rst'),
+        ],
     }
     contents = dict((k, []) for k in filenames.keys())
     # Load all files contents

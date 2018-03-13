@@ -28,6 +28,12 @@ LICENSE_OLD_START = {
     'html': '<!-- Copyright (C) '
 }
 
+LICENSE_OLD_EXISTS = {
+    'jinja': 'modify it under the terms of the GNU',
+    'js': 'modify it under the terms of the GNU',
+    'html': 'modify it under the terms of the GNU',
+}
+
 LICENSE_NEW_CODE = 'MIT'
 
 LICENSE_NEW_TROVE = 'License :: OSI Approved :: MIT License'
@@ -36,13 +42,40 @@ LICENSE_NEW_INFILE = """\
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details."""
 
-LICENSE_NEW_FULLHEADER_JINJA = """-*- coding: utf-8 -*-
+LICENSE_NEW_FULLHEADER_JINJA = """{{# -*- coding: utf-8 -*-
 
   This file is part of Invenio.
   Copyright (C) {years} CERN.
 
   Invenio is free software; you can redistribute it and/or modify it
-  under the terms of the MIT License; see LICENSE file for more details."""
+  under the terms of the MIT License; see LICENSE file for more details.
+#}}
+"""
+LICENSE_NEW_FULLHEADER_JS = """/*
+ * This file is part of Invenio.
+ * Copyright (C) {years} CERN.
+ *
+ * Invenio is free software; you can redistribute it and/or modify it
+ * under the terms of the MIT License; see LICENSE file for more details.
+ */
+"""
+
+LICENSE_NEW_FULLHEADER_HTML = """<!--
+  This file is part of Invenio.
+  Copyright (C) 2015-2018 CERN.
+
+  Invenio is free software; you can redistribute it and/or modify it
+  under the terms of the MIT License; see LICENSE file for more details.
+-->
+"""
+
+LICENSE_NEW_FULLHEADER_PYTHON = """# -*- coding: utf-8 -*-
+# This file is part of Invenio.
+# Copyright (C) 2015-2018 CERN.
+#
+# Invenio is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
+"""
 
 LICENSE_NEW_INFILE_JS = """\
  * Invenio is free software; you can redistribute it and/or modify it
@@ -179,16 +212,78 @@ def change_license_for_rst_file(filename):
                     # ignore empty lines immediately after copyright
                     pass
 
-def change_license_for_jinja_content(text, years):
-    if text.startswith('{#'):
-        end = text.find('#}')
-        body = text[end+3:]
+
+def change_license_for_rst_content(text, years=None):
+    """Remove the license header from RST files."""
+
+    #old_content = open(filename, 'r').read()
+    # detect license block end:
+    license_block_end = 'submit itself to any jurisdiction.'
+    if license_block_end in text:
+        pass  # good, we found it
+    else:
+        license_block_end = 'MA 02111-1307, USA.'
+        if license_block_end in text:
+            pass  # good, we found it
+        else:
+            return text  # License not found, return original text
+    # update the file until license block end:
+    license_block_p = True
+    main_content_p = False
+    #print('[INFO] Changing file', filename)
+    new_output = []
+    for line in text.split('\n'):
+        line = line.rstrip()
+        if license_block_p:
+            if license_block_end in line:
+                license_block_p = False
+        else:
+            if main_content_p:
+                new_output.append(line)
+            else:
+                if len(line):
+                    main_content_p = True
+                    new_output.append(line)
+                else:
+                    # ignore empty lines immediately after copyright
+                    pass
+    return '\n'.join(new_output)
+
+
+def change_license_in_block_comment(text, years='2015-2018', filetype='js',
+        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS):
+    """Generic license swapper for block-comment headers: HTML, JS or Jinja."""
+    end = 0
+    if text.startswith(start_str):
+        end = text.find(end_str)
+        body = text[end + len(end_str) + 1:]
     else:
         body = text
-
-    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(years=years) + '\n#}\n'
-    out += body
+    old_in_lic_idx = text.index(LICENSE_OLD_EXISTS[filetype])
+    # Change only if old license text detected between license header
+    if old_in_lic_idx < end:
+        out = formatter.format(years=years)
+        out += body
+    else:
+        out = text
     return out
+
+
+def change_license_for_jinja_content(text, years='2015-2018'):
+    return change_license_in_block_comment(text, years=years, filetype='jinja',
+            start_str='{#', end_str='#}',
+            formatter=LICENSE_NEW_FULLHEADER_JINJA)
+
+
+def change_license_for_js_content(text, years='2015-2018'):
+    return change_license_in_block_comment(text, years=years, filetype='js',
+            start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS)
+
+
+def change_license_for_html_content(text, years='2015-2018'):
+    return change_license_in_block_comment(text, years=years, filetype='html',
+            start_str='<!--', end_str='-->',
+            formatter=LICENSE_NEW_FULLHEADER_HTML)
 
 
 def change_license_for_jinja_file(filename, years):
@@ -198,7 +293,7 @@ def change_license_for_jinja_file(filename, years):
     with open(filename, 'r') as fp:
         content = fp.read()
     years = get_years_string_from_file(filename)
-    out = change_license_for_jinja_content(content, years)
+    out = change_license_for_jinja_content(content, years=years)
     with open(filename, 'w') as fp:
         fp.write(out)
     return True
