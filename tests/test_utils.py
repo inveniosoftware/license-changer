@@ -36,3 +36,4 @@ def test_find_prefix_suffix():
     assert find_prefix_suffix('<!-- GPL', start, end, inside) == None
     assert find_prefix_suffix('<!---->GPL -->', start, end, inside) == None
     assert find_prefix_suffix('<!--x--><!-- GPL --><!--y-->', start, end, inside) == ('<!--x-->', '<!--y-->')
+    assert find_prefix_suffix('GPL -->', start, end, inside) == None

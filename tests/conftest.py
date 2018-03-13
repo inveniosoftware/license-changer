@@ -25,12 +25,10 @@ def example_contents():
         ('js_1.out.js', 'js_1.out.js'),
 
         # js_2 has top-level non-license header. Keep it and add license above.
-        # TODO: Fix -> Removing other block comments
-        #('js_2.js', 'js_2.out.js'),
+        ('js_2.js', 'js_2.out.js'),
 
         # js_3 has no header, add it
-        # TODO Fix
-        #('js_3.js', 'js_3.out.js'),
+        ('js_3.js', 'js_3.out.js'),
         ('html_1.html', 'html_1.out.html'),
 
         # Ignore already parsed
@@ -43,8 +41,8 @@ def example_contents():
         # Ignore already parsed
         ('rst_1.out.rst', 'rst_1.out.rst'),
         # TODO: Python not implemented
-        #('python_1.py', 'python_1.out.py'),
-        #('python_2.py', 'python_2.out.py'),
+        ('python_1.py', 'python_1.out.py'),
+        ('python_2.py', 'python_2.out.py'),
     ]
     # Load all files contents
     contents = []
