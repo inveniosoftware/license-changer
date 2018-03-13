@@ -38,7 +38,7 @@ def test_years_re_match_python():
     # 2016
     text4 = dedent("""# -*- coding: utf-8 -*-
     # This file is part of Invenio.
-    # Copyright (C) 2018 CERN.
+    # Copyright (C)2016CERN.
     foobar = 123
     def main():
         pass
@@ -54,14 +54,18 @@ def test_years_re_match_python():
         pass
     """)
 
-    expected1 = '2003'
-    expected2 = '2003'
-    expected3 = '2016'
-    expected4 = '2018'
-    expected5 = '2018'
+    # None
+    text6 = dedent("""# -*- coding: utf-8 -*-
+    # This file is part of Invenio.
+    # Copyright (C) CERN.
+    foobar = 123
+    def main():
+        pass
+    """)
 
-    assert get_first_year_from_file(text1) == expected1
-    assert get_first_year_from_file(text2) == expected2
-    assert get_first_year_from_file(text3) == expected3
-    assert get_first_year_from_file(text4) == expected4
-    assert get_first_year_from_file(text5) == expected5
+    assert get_first_year_from_file(text1) == '2003'
+    assert get_first_year_from_file(text2) == '2003'
+    assert get_first_year_from_file(text3) == '2016'
+    assert get_first_year_from_file(text4) == '2016'
+    assert get_first_year_from_file(text5) == '2018'
+    assert get_first_year_from_file(text6) == None
