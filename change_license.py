@@ -309,6 +309,19 @@ def setup_py_update_trove_classifiers(filename):
     fdesc.close()
 
 
+def change_license_for_README_file(filename):
+    """Change license for LICENSE file. Special treatment."""
+    old_content = open(filename, 'r').read()
+    new_content = re.sub(r'GPLv2 license', 'MIT license', old_content)
+    if old_content != new_content:
+        fdesc = open(filename, 'w')
+        fdesc.write(new_content)
+        fdesc.close()
+        return True
+    return False
+
+
+
 # Mapping from filetype to text changer function
 functs = {
     'jinja': change_license_for_jinja_content,
@@ -355,6 +368,10 @@ def main(filename):
         if filename_basename == 'setup.py':
             setup_py_update_trove_classifiers(filename)
             print('[INFO] Updated Trove', filename)
+        if filename_basename == 'README.rst':
+            changed = change_license_for_README_file(filename)
+            if  changed:
+                print('[INFO] Custom content update', filename)
 
 
 if __name__ == '__main__':
