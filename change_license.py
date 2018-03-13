@@ -110,7 +110,7 @@ submit itself to any jurisdiction.
 
 YEARS_RE_PATTERN_PYTHON = r'^(.*# Copyright \(C\).* )([0-9]+) (CERN.*)$'
 YEARS_RE_PATTERN_JS = r'^(.* \* Copyright \(C\).* )([0-9]+) (CERN.*)$'
-FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) +)(?P<first_year>[0-9]*).*'
+FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) *)(?P<first_year>[0-9]+).*'
 
 
 def get_commit_years(filename):
