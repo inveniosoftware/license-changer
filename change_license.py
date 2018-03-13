@@ -275,6 +275,21 @@ def change_license_for_python_content(text, years='2015-2018'):
     return filename_touched_p
 
 
+def find_prefix_suffix(text, start, end, inside):
+    """Find the prefix and suffix separated by comment block."""
+    s = text.find(start)
+    e = text.find(end, s + len(start))
+    i = text.find(inside, s + len(start))
+    while e > 0 and (i == -1 or i > e):
+        s = text.find(start, e + len(end))
+        if s != -1:
+            e = text.find(end, s + len(start))
+            i = text.find(inside, s + len(start))
+        else:
+            return None
+    if i >= 0 and i < e:
+        return text[:s], text[e + len(end):]
+
 def change_license_in_block_comment(text, years='2015-2018', filetype='js',
         start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
         add_if_missing=True):
