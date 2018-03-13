@@ -28,11 +28,8 @@ LICENSE_OLD_START = {
     'html': '<!-- Copyright (C) '
 }
 
-LICENSE_OLD_EXISTS = {
-    'jinja': 'modify it under the terms of the GNU',
-    'js': 'modify it under the terms of the GNU',
-    'html': 'modify it under the terms of the GNU',
-}
+OLD_LICENSE_SUBSTR = 'modify it under the terms of the GNU'
+NEW_LICENSE_SUBSTR = 'under the terms of the MIT License'
 
 LICENSE_NEW_CODE = 'MIT'
 
@@ -49,16 +46,14 @@ LICENSE_NEW_FULLHEADER_JINJA = """{{# -*- coding: utf-8 -*-
 
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
-#}}
-"""
+#}}"""
 LICENSE_NEW_FULLHEADER_JS = """/*
  * This file is part of Invenio.
  * Copyright (C) {years} CERN.
  *
  * Invenio is free software; you can redistribute it and/or modify it
  * under the terms of the MIT License; see LICENSE file for more details.
- */
-"""
+ */"""
 
 LICENSE_NEW_FULLHEADER_HTML = """<!--
   This file is part of Invenio.
@@ -66,16 +61,15 @@ LICENSE_NEW_FULLHEADER_HTML = """<!--
 
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
--->
-"""
+-->"""
 
 LICENSE_NEW_FULLHEADER_PYTHON = """# -*- coding: utf-8 -*-
+#
 # This file is part of Invenio.
 # Copyright (C) 2015-2018 CERN.
 #
 # Invenio is free software; you can redistribute it and/or modify it
-# under the terms of the MIT License; see LICENSE file for more details.
-"""
+# under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_INFILE_JS = """\
  * Invenio is free software; you can redistribute it and/or modify it
@@ -248,37 +242,14 @@ def change_license_for_rst_content(text, years=None):
     return '\n'.join(new_output)
 
 
-def change_license_for_python_content(text, years='2015-2018'):
-    "Change license for *.py files. Return True if filename was touched."
-
-    year = get_first_year_from_file(text)
-    years = get_years_string(year) if year else years
-    style = 'python'
-    license_block_p = False
-    filename_touched_p = False
-    print('[INFO] Changing file', filename)
-    for line in fileinput.input(filename, inplace=True):
-        line = line.rstrip()
-        if not license_block_p:
-            if LICENSE_OLD_START[style] in line:
-                license_block_p = True
-            else:
-                print(line)
-        else:
-            if line.startswith('#'):
-                pass
-            else:
-                license_block_p = False
-                print(LICENSE_NEW_INFILE)
-                print(line)
-                filename_touched_p = True
-    return filename_touched_p
-
-
 def find_prefix_suffix(text, start, end, inside):
     """Find the prefix and suffix separated by comment block."""
     s = text.find(start)
+    if s == -1:
+        return None
     e = text.find(end, s + len(start))
+    if e == -1:
+        return None
     i = text.find(inside, s + len(start))
     while e > 0 and (i == -1 or i > e):
         s = text.find(start, e + len(end))
@@ -290,45 +261,72 @@ def find_prefix_suffix(text, start, end, inside):
     if i >= 0 and i < e:
         return text[:s], text[e + len(end):]
 
-def change_license_in_block_comment(text, years='2015-2018', filetype='js',
-        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
+
+def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
+        end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
         add_if_missing=True):
     """Generic license swapper for block-comment headers: HTML, JS or Jinja."""
     # Try to fetch the first copyright year from an existing header file
     # If it's not there, fall-back to the default
     year = get_first_year_from_file(text)
     years = get_years_string(year) if year else years
-    end = 0
-    if text.startswith(start_str):
-        end = text.find(end_str)
-        body = text[end + len(end_str) + 1:]
+
+    # If new license is found, skip
+    new_pref_suff = find_prefix_suffix(text, start_str, end_str, NEW_LICENSE_SUBSTR)
+    if new_pref_suff:
+        return text, False
+
+    # Try to find old license
+    pref_suff = find_prefix_suffix(text, start_str, end_str, OLD_LICENSE_SUBSTR)
+    # If the block split wasn't found, concatenate with full text
+    if not pref_suff:
+        prefix, suffix = '', '\n' + text
     else:
-        body = text
-    old_in_lic_idx = text.find(LICENSE_OLD_EXISTS[filetype])
-    # Change only if old license text detected between license header
-    if (old_in_lic_idx == -1 or old_in_lic_idx > end) and not add_if_missing:
-        out = text
+        prefix, suffix = pref_suff
+
+    if pref_suff or add_if_missing:
+        license_text = formatter.format(years=years)
+        out = prefix + license_text + suffix
+        return out, True
     else:
-        out = formatter.format(years=years)
-        out += body
-    return out
+        return text, False
 
 
 def change_license_for_jinja_content(text, years='2015-2018'):
-    return change_license_in_block_comment(text, years=years, filetype='jinja',
-            start_str='{#', end_str='#}',
-            formatter=LICENSE_NEW_FULLHEADER_JINJA)
+    text, touched = change_license_in_block_comment(text, years=years,
+        start_str='{#', end_str='#}', formatter=LICENSE_NEW_FULLHEADER_JINJA)
+    return text
 
 
 def change_license_for_js_content(text, years='2015-2018'):
-    return change_license_in_block_comment(text, years=years, filetype='js',
-            start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS)
+    text, touched = change_license_in_block_comment(text, years=years,
+        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS)
+    return text
 
 
 def change_license_for_html_content(text, years='2015-2018'):
-    return change_license_in_block_comment(text, years=years, filetype='html',
-            start_str='<!--', end_str='-->',
-            formatter=LICENSE_NEW_FULLHEADER_HTML)
+    text, touched = change_license_in_block_comment(text, years=years,
+        start_str='<!--', end_str='-->', formatter=LICENSE_NEW_FULLHEADER_HTML)
+    return text
+
+
+def change_license_for_python_content(text, years='2015-2018'):
+    # First try to match block starting with utf-8 coding tag
+    s_str = '# -*- coding: utf-8 -*-'
+    e_str = '# submit itself to any jurisdiction.'
+
+    if find_prefix_suffix(text, s_str, e_str, NEW_LICENSE_SUBSTR):
+        return text
+    elif find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
+        text, touched =  change_license_in_block_comment(text, years=years,
+            start_str=s_str, end_str=e_str,
+            formatter=LICENSE_NEW_FULLHEADER_PYTHON)
+    else:
+        s_str = '# This file is part of Invenio'
+        text, touched =  change_license_in_block_comment(text, years=years,
+            start_str=s_str, end_str=e_str,
+            formatter=LICENSE_NEW_FULLHEADER_PYTHON)
+    return text
 
 
 def change_license_for_jinja_file(filename, years):

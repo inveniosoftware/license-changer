@@ -13,7 +13,7 @@ def test_license_text_changers(example_contents):
         'python': change_license_for_python_content,
     }
 
-    #example_contents = [example_contents[7], ]
+    example_contents = [example_contents[15], ]
     for idx, (filetype, in_text, exp_text) in enumerate(example_contents):
         out_text = fns[filetype](in_text)
         assert out_text == exp_text, "Failed at Idx: {0}".format(str(idx))
