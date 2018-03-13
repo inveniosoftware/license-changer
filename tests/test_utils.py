@@ -1,5 +1,3 @@
-import sys
-sys.path.append('..')
 from change_license import get_years_string
 import datetime
 
