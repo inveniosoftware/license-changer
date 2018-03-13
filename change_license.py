@@ -39,7 +39,7 @@ LICENSE_NEW_INFILE = """\
 LICENSE_NEW_FULLHEADER_JINJA = """-*- coding: utf-8 -*-
 
   This file is part of Invenio.
-  Copyright (C) {date} CERN.
+  Copyright (C) {years} CERN.
 
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details."""
@@ -91,6 +91,32 @@ def get_commit_years(filename):
     years = list(years.keys())
     years.sort()
     return years
+
+def get_years_string(year, fmt='{start}-{end}', lower_year='2015',
+        upper_year=None):
+    """Return a copyright years string for the minimum year from old license.
+
+    The output is a range: '2013-2018' or a single year '2018'. We also impose
+    a minimum year where the copyright holds (e.g.: '2015') as well as default
+    maximum year, which is current year (at the time of the modification).
+
+    param year: First contribution year, e.g.: '2013'
+    type year: str
+    returns: Copyright years string, e.g.: '2015-2018' or '2018'.
+    """
+    upper_year = upper_year or str(datetime.date.today().year)
+    lo, hi = max(year, lower_year), upper_year
+    # Return range ('2015-2018') if applicable, otherwise one year ('2018')
+    years = fmt.format(start=lo, end=hi) if lo != hi else str(hi)
+    return years
+
+def get_years_string_from_file(filename, **kwargs):
+    """Return a copyright years string for the file (looks at commit dates).
+
+    returns: Copyright years string, e.g.: '2015-2018' or '2018'.
+    """
+    min_year = min(get_commit_years(filename))  # min(['2013', '2014', ... ])
+    return get_years_string(min_year, **kwargs)
 
 
 def change_license_for_LICENSE_file(filename):
@@ -152,25 +178,26 @@ def change_license_for_rst_file(filename):
                     # ignore empty lines immediately after copyright
                     pass
 
+def change_license_for_jinja_content(text, years):
+    if text.startswith('{#'):
+        end = text.find('#}')
+        body = text[end+3:]
+    else:
+        body = text
 
-def change_license_for_jinja_file(filename):
+    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(date=years) + '\n#}\n'
+    out += body
+    return out
+
+
+def change_license_for_jinja_file(filename, years):
     "Add license header for *.html files that are jinja templates."
     print('[INFO] Changing file', filename)
 
     with open(filename, 'r') as fp:
         content = fp.read()
-    if content.startswith('{#'):
-        end = content.find('#}')
-        body = content[end+3:]
-    else:
-        body = content
-
-    years = get_commit_years(filename)
-    lo, hi = max(min(years), '2015'), '2018'
-    date = lo + '-' + hi if lo != hi else hi
-    import ipdb; ipdb.set_trace()
-    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(date=date) + '\n#}\n'
-    out += body
+    years = get_years_string_from_file(filename)
+    out = change_license_for_jinja_content(content, years)
     with open(filename, 'w') as fp:
         fp.write(out)
     return True
