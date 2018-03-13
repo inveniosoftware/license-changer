@@ -185,7 +185,7 @@ def change_license_for_jinja_content(text, years):
     else:
         body = text
 
-    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(date=years) + '\n#}\n'
+    out = '{# ' + LICENSE_NEW_FULLHEADER_JINJA.format(years=years) + '\n#}\n'
     out += body
     return out
 
