@@ -107,7 +107,7 @@ def get_years_string(year, fmt='{start}-{end}', lower_year='2015',
     upper_year = upper_year or str(datetime.date.today().year)
     lo, hi = max(year, lower_year), upper_year
     # Return range ('2015-2018') if applicable, otherwise one year ('2018')
-    years = fmt.format(start=lo, end=hi) if lo != hi else str(hi)
+    years = fmt.format(start=lo, end=hi) if lo < hi else str(max(lo, hi))
     return years
 
 def get_years_string_from_file(filename, **kwargs):
