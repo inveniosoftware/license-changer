@@ -1,5 +1,3 @@
-import sys
-sys.path.append('..')
 from change_license import change_license_for_jinja_content
 from textwrap import dedent
 import datetime
