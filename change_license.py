@@ -20,24 +20,12 @@ import subprocess
 from collections import defaultdict
 
 
-LICENSE_OLD_START = {
-    'python': '# Invenio is free software; you can redistribute it',
-    'rst': """..
-    This file is part of Invenio.""",
-    'js': ' * Invenio is free software; you can redistribute',
-    'html': '<!-- Copyright (C) '
-}
-
 OLD_LICENSE_SUBSTR = 'modify it under the terms of the GNU'
 NEW_LICENSE_SUBSTR = 'under the terms of the MIT License'
 
 LICENSE_NEW_CODE = 'MIT'
 
 LICENSE_NEW_TROVE = 'License :: OSI Approved :: MIT License'
-
-LICENSE_NEW_INFILE = """\
-# Invenio is free software; you can redistribute it and/or modify it
-# under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_FULLHEADER_JINJA = """{{# -*- coding: utf-8 -*-
 
@@ -66,14 +54,10 @@ LICENSE_NEW_FULLHEADER_HTML = """<!--
 LICENSE_NEW_FULLHEADER_PYTHON = """# -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015-2018 CERN.
+# Copyright (C) {years} CERN.
 #
 # Invenio is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details."""
-
-LICENSE_NEW_INFILE_JS = """\
- * Invenio is free software; you can redistribute it and/or modify it
- * under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_HEADER = """\
 MIT License
@@ -102,8 +86,6 @@ granted to it by virtue of its status as an Intergovernmental Organization or
 submit itself to any jurisdiction.
 """
 
-YEARS_RE_PATTERN_PYTHON = r'^(.*# Copyright \(C\).* )([0-9]+) (CERN.*)$'
-YEARS_RE_PATTERN_JS = r'^(.* \* Copyright \(C\).* )([0-9]+) (CERN.*)$'
 FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) *)(?P<first_year>[0-9]+).*'
 
 
@@ -174,38 +156,22 @@ def do_not_change_license(filename):
     print('[INFO] Ignoring file', filename)
 
 
-def change_license_for_rst_file(filename):
-    "Change license for *.rst files."
-    old_content = open(filename, 'r').read()
-    # detect license block end:
-    license_block_end = 'submit itself to any jurisdiction.'
-    if license_block_end in old_content:
-        pass  # good, we found it
-    else:
-        license_block_end = 'MA 02111-1307, USA.'
-        if license_block_end in old_content:
-            pass  # good, we found it
+def find_prefix_suffix(text, start, end, inside):
+    """Find the prefix and suffix separated by comment block."""
+    s = text.find(start)
+    if s == -1:
+        return None
+    e = text.find(end, s + len(start))
+    i = text.find(inside, s + len(start))
+    while e > 0 and (i == -1 or i > e):
+        s = text.find(start, e + len(end))
+        if s != -1:
+            e = text.find(end, s + len(start))
+            i = text.find(inside, s + len(start))
         else:
-            license_block_end = 'XXXXXXXXXXXXXXXXXXXXXXXX'
-    # update the file until license block end:
-    license_block_p = True
-    main_content_p = False
-    print('[INFO] Changing file', filename)
-    for line in fileinput.input(filename, inplace=True):
-        line = line.rstrip()
-        if license_block_p:
-            if license_block_end in line:
-                license_block_p = False
-        else:
-            if main_content_p:
-                print(line)
-            else:
-                if len(line):
-                    main_content_p = True
-                    print(line)
-                else:
-                    # ignore empty lines immediately after copyright
-                    pass
+            return None
+    if i >= 0 and i < e:
+        return text[:s], text[e + len(end):]
 
 
 def change_license_for_rst_content(text, years=None):
@@ -219,7 +185,7 @@ def change_license_for_rst_content(text, years=None):
         if license_block_end in text:
             pass  # good, we found it
         else:
-            return text  # License not found, return original text
+            return text, False  # License not found, return original text
     # update the file until license block end:
     license_block_p = True
     main_content_p = False
@@ -239,33 +205,14 @@ def change_license_for_rst_content(text, years=None):
                 else:
                     # ignore empty lines immediately after copyright
                     pass
-    return '\n'.join(new_output)
-
-
-def find_prefix_suffix(text, start, end, inside):
-    """Find the prefix and suffix separated by comment block."""
-    s = text.find(start)
-    if s == -1:
-        return None
-    e = text.find(end, s + len(start))
-    if e == -1:
-        return None
-    i = text.find(inside, s + len(start))
-    while e > 0 and (i == -1 or i > e):
-        s = text.find(start, e + len(end))
-        if s != -1:
-            e = text.find(end, s + len(start))
-            i = text.find(inside, s + len(start))
-        else:
-            return None
-    if i >= 0 and i < e:
-        return text[:s], text[e + len(end):]
+    # TODO: We don't always modify, second parameter can be False
+    return '\n'.join(new_output), True
 
 
 def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
         end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
         add_if_missing=True):
-    """Generic license swapper for block-comment headers: HTML, JS or Jinja."""
+    """Generic license swapper for block-commend headers."""
     # Try to fetch the first copyright year from an existing header file
     # If it's not there, fall-back to the default
     year = get_first_year_from_file(text)
@@ -295,30 +242,30 @@ def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
 def change_license_for_jinja_content(text, years='2015-2018'):
     text, touched = change_license_in_block_comment(text, years=years,
         start_str='{#', end_str='#}', formatter=LICENSE_NEW_FULLHEADER_JINJA)
-    return text
+    return text, touched
 
 
 def change_license_for_js_content(text, years='2015-2018'):
     text, touched = change_license_in_block_comment(text, years=years,
         start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS)
-    return text
+    return text, touched
 
 
 def change_license_for_html_content(text, years='2015-2018'):
     text, touched = change_license_in_block_comment(text, years=years,
         start_str='<!--', end_str='-->', formatter=LICENSE_NEW_FULLHEADER_HTML)
-    return text
+    return text, touched
 
 
 def change_license_for_python_content(text, years='2015-2018'):
     # First try to match block starting with utf-8 coding tag
     s_str = '# -*- coding: utf-8 -*-'
-    e_str = '# submit itself to any jurisdiction.'
+    e_str = 'submit itself to any jurisdiction.'
 
     if find_prefix_suffix(text, s_str, e_str, NEW_LICENSE_SUBSTR):
         return text
     elif find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
-        text, touched =  change_license_in_block_comment(text, years=years,
+        text, touched = change_license_in_block_comment(text, years=years,
             start_str=s_str, end_str=e_str,
             formatter=LICENSE_NEW_FULLHEADER_PYTHON)
     else:
@@ -326,86 +273,20 @@ def change_license_for_python_content(text, years='2015-2018'):
         text, touched =  change_license_in_block_comment(text, years=years,
             start_str=s_str, end_str=e_str,
             formatter=LICENSE_NEW_FULLHEADER_PYTHON)
-    return text
+    return text, touched
 
 
-def change_license_for_jinja_file(filename, years):
-    "Add license header for *.html files that are jinja templates."
-    print('[INFO] Changing file', filename)
-
+def change_license_for_source_file(filename, change_function):
+    """Change the license for a source file (js, html, scss, py)."""
     with open(filename, 'r') as fp:
         content = fp.read()
     years = get_years_string_from_file(filename)
-    out = change_license_for_jinja_content(content, years=years)
-    with open(filename, 'w') as fp:
-        fp.write(out)
-    return True
-
-
-def change_license_for_js_file(filename):
-    "Change license for *.js files. Return True if filename was touched."
-    style = 'js'
-    license_block_p = False
-    filename_touched_p = False
-    print('[INFO] Changing file', filename)
-    for line in fileinput.input(filename, inplace=True):
-        line = line.rstrip()
-        if not license_block_p:
-            if LICENSE_OLD_START[style] in line:
-                license_block_p = True
-            else:
-                print(line)
-        else:
-            if line.startswith(' *') and not line.startswith(' */'):
-                pass
-            else:
-                license_block_p = False
-                print(LICENSE_NEW_INFILE_JS)
-                print(line)
-                filename_touched_p = True
-    return filename_touched_p
-
-
-def change_license_for_python_file(filename):
-    "Change license for *.py files. Return True if filename was touched."
-    style = 'python'
-    license_block_p = False
-    filename_touched_p = False
-    print('[INFO] Changing file', filename)
-    for line in fileinput.input(filename, inplace=True):
-        line = line.rstrip()
-        if not license_block_p:
-            if LICENSE_OLD_START[style] in line:
-                license_block_p = True
-            else:
-                print(line)
-        else:
-            if line.startswith('#'):
-                pass
-            else:
-                license_block_p = False
-                print(LICENSE_NEW_INFILE)
-                print(line)
-                filename_touched_p = True
-    return filename_touched_p
-
-
-def raw_update_copyright_years(content, pattern=YEARS_RE_PATTERN_PYTHON):
-    "Update copyright year list for filename if the current year is not listed."
-    current_year = str(datetime.date.today().year)
-    newcontent = []
-    for line in content.split('\n'):
-        line = line.rstrip()
-        match = re.match(pattern, line)
-        if match:
-            leader, year, trailer = match.groups()
-            if year != current_year:
-                newcontent.append(leader + year + ', ' + current_year + ' ' + trailer)
-            else:
-                newcontent.append(line)
-        else:
-            newcontent.append(line)
-    return '\n'.join(newcontent)
+    out, touched = change_function(content, years=years)
+    if touched:
+        with open(filename, 'w') as fp:
+            fp.write(out)
+        return True
+    return False
 
 
 def get_first_year_from_file(content, pattern=FIRST_YEAR_RE_PATTERN):
@@ -418,32 +299,6 @@ def get_first_year_from_file(content, pattern=FIRST_YEAR_RE_PATTERN):
     return first_year
 
 
-def update_copyright_years(filename, pattern=YEARS_RE_PATTERN_PYTHON):
-    "Update copyright year list for filename if the current year is not listed."
-    current_year = str(datetime.date.today().year)
-    for line in fileinput.input(filename, inplace=True):
-        line = line.rstrip()
-        match = re.match(pattern, line)
-        if match:
-            leader, year, trailer = match.groups()
-            if year != current_year:
-                print(leader + year + ', ' + current_year + ' ' + trailer)
-            else:
-                print(line)
-        else:
-            print(line)
-
-
-def need_to_process(filename, style='python'):
-    "Do we need to process given file?"
-    need_to_process_p = True
-    old_content = open(filename, 'r').read()
-    if LICENSE_OLD_START[style] not in old_content:
-        print('[INFO] Ignoring file', filename)
-        need_to_process_p = False
-    return need_to_process_p
-
-
 def setup_py_update_trove_classifiers(filename):
     "Update Trove classifiers in setup.py filename."
     old_content = open(filename, 'r').read()
@@ -453,6 +308,15 @@ def setup_py_update_trove_classifiers(filename):
     fdesc.write(new_content)
     fdesc.close()
 
+
+# Mapping from filetype to text changer function
+functs = {
+    'jinja': change_license_for_jinja_content,
+    'js': change_license_for_js_content,
+    'html': change_license_for_html_content,
+    'rst': change_license_for_rst_content,
+    'python': change_license_for_python_content,
+}
 
 @click.command()
 @click.argument('filename', type=click.Path(exists=True))
@@ -466,29 +330,31 @@ def main(filename):
         change_license_for_docslicenserst_file(filename)
     else:
         path_prefix, extension = os.path.splitext(filename)
-        if extension in ('.po', '.png', '.svg', '.gif', '.jpeg'):
-            do_not_change_license(filename)
-        elif extension in ('.rst', ):
-            if need_to_process(filename, 'rst'):
-                change_license_for_rst_file(filename)
+        fn = None
+        if extension in ('.rst', ):
+            fn = functs['rst']
+        elif extension in ('.py', ):
+            fn = functs['python']
         elif extension in ('.js', '.scss', ):
-            if need_to_process(filename, 'js'):
-                if change_license_for_js_file(filename):
-                    update_copyright_years(filename, pattern=YEARS_RE_PATTERN_JS)
+            fn = functs['js']
         elif extension in ('.html', ) and ('src' in path_prefix or 'static' in path_prefix):
-            # Add HTML-style comments
-            if need_to_process(filename, 'html'):
-                pass
+            fn = functs['html']
         elif extension in ('.html', ) and ('src' not in path_prefix) and ('static' not in path_prefix) and 'templates' in path_prefix:
-            # Add Jinja-style comments
-            change_license_for_jinja_file(filename)
+            fn = functs['jinja']
+
+        if fn:
+            changed = change_license_for_source_file(filename, fn)
+            if changed:
+                print('[INFO] Changed file', filename)
+            else:
+                print('[INFO] Unchanged file', filename)
         else:
-            # we assume Python-style by default
-            if need_to_process(filename, 'python'):
-                if change_license_for_python_file(filename):
-                    update_copyright_years(filename)
-                    if filename_basename == 'setup.py':
-                        setup_py_update_trove_classifiers(filename)
+            print('[INFO] Ignored file', filename)
+
+        # Post-processors
+        if filename_basename == 'setup.py':
+            setup_py_update_trove_classifiers(filename)
+            print('[INFO] Updated Trove', filename)
 
 
 if __name__ == '__main__':
