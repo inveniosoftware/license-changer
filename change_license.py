@@ -288,6 +288,10 @@ def change_license_for_python_content(text, years='2015-2018', add_missing=True)
                 start_str=s_str, end_str=e_str, add_missing=add_missing,
                 formatter=LICENSE_NEW_FULLHEADER_PYTHON)
             break
+    if add_missing:
+        text, touched = change_license_in_block_comment(text, years=years,
+            start_str=s_str1, end_str=e_str2, add_missing=add_missing,
+            formatter=LICENSE_NEW_FULLHEADER_PYTHON)
     return text, touched
 
 
