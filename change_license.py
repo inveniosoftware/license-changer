@@ -27,36 +27,37 @@ LICENSE_NEW_CODE = 'MIT'
 
 LICENSE_NEW_TROVE = 'License :: OSI Approved :: MIT License'
 
+PROJECT_NAME = 'Invenio'
 LICENSE_NEW_FULLHEADER_JINJA = """{{# -*- coding: utf-8 -*-
 
-  This file is part of Invenio.
+  This file is part of {name}.
   Copyright (C) {years} CERN.
 
-  Invenio is free software; you can redistribute it and/or modify it
+  {name} is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
 #}}"""
 LICENSE_NEW_FULLHEADER_JS = """/*
- * This file is part of Invenio.
+ * This file is part of {name}.
  * Copyright (C) {years} CERN.
  *
- * Invenio is free software; you can redistribute it and/or modify it
+ * {name} is free software; you can redistribute it and/or modify it
  * under the terms of the MIT License; see LICENSE file for more details.
  */"""
 
 LICENSE_NEW_FULLHEADER_HTML = """<!--
-  This file is part of Invenio.
+  This file is part of {name}.
   Copyright (C) {years} CERN.
 
-  Invenio is free software; you can redistribute it and/or modify it
+  {name} is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
 -->"""
 
 LICENSE_NEW_FULLHEADER_PYTHON = """# -*- coding: utf-8 -*-
 #
-# This file is part of Invenio.
+# This file is part of {name}.
 # Copyright (C) {years} CERN.
 #
-# Invenio is free software; you can redistribute it and/or modify it
+# {name} is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details."""
 
 LICENSE_NEW_HEADER = """\
@@ -231,7 +232,7 @@ def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
         prefix, suffix = pref_suff
 
     if pref_suff or add_missing:
-        license_text = formatter.format(years=years)
+        license_text = formatter.format(years=years, name=PROJECT_NAME)
         out = prefix + license_text + suffix
         return out, True
     else:
@@ -248,7 +249,7 @@ def change_license_for_jinja_content(text, years='2015-2018', add_missing=True):
 def change_license_for_js_content(text, years='2015-2018', add_missing=True):
     if NEW_LICENSE_SUBSTR in text:
         return text, False
-    s_str = '// This file is part of Invenio'
+    s_str = '// This file is part of '
     e_str = 'submit itself to any jurisdiction.'
     if find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
         text, touched = change_license_in_block_comment(text, years=years,
@@ -278,7 +279,7 @@ def change_license_for_html_content(text, years='2015-2018', add_missing=True):
 def change_license_for_python_content(text, years='2015-2018', add_missing=True):
     # First try to match block starting with utf-8 coding tag
     s_str1 = '# -*- coding: utf-8 -*-'  # Encoding start
-    s_str2 = '# This file is part of Invenio'  # License start
+    s_str2 = '# This file is part of '  # License start
 
     e_str1 = '111-1307, USA.'  # GPL part
     e_str2 = 'submit itself to any jurisdiction.'  # CERN part
@@ -398,8 +399,11 @@ FILENAME2FN = {
 
 @click.command()
 @click.argument('filename', type=click.Path(exists=True))
-def main(filename):
+@click.argument('projectname', type=str, default='Invenio')
+def main(filename, projectname):
     "Change license of the filename."
+    global PROJECT_NAME
+    PROJECT_NAME = projectname
 
     filename_basename = os.path.basename(filename)
     if filename_basename == 'LICENSE':

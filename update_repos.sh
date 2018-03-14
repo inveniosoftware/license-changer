@@ -1,7 +1,10 @@
 #
-# You need to create a di
+# This creates a directory in $HOME/$TEMPDIR  (see below)
 #
 TEMPDIR="tmpsrc"
+if [ ! -d "$HOME/$TEMPDIR" ]; then
+    mkdir $HOME/$TEMPDIR
+fi
 declare -a repos=("dcxml"
                   "citeproc-py-styles"
                   "invenio-marc21"
@@ -40,15 +43,21 @@ do
     if [ ! -d "$HOME/$TEMPDIR/$repo" ]; then
         echo $repo "FETCHING"
         cd "$HOME/$TEMPDIR"
-        git clone "git@github.com:inveniosoftware/${repo}.git"
+        git clone "git@github.com:inveniosoftware/${repo}.git" &> /dev/null
         cd $repo
-        git remote rename origin upstream
+        git remote rename origin upstream &> /dev/null
     fi
     cd "$HOME/$TEMPDIR/$repo"
     git checkout -b license-change &> /dev/null
     for file in $(git ls-files)
     do
-        $HOME/src/license-changer/change_license.py $file &> /dev/null
+        if [[ $repo == "invenio-*" ]]; then
+            $HOME/src/license-changer/change_license.py $file &> /dev/null
+        else
+            # Pass repository name as second parameter (license formatting)
+            # if it's not invenio-*
+            $HOME/src/license-changer/change_license.py $file $repo &> /dev/null
+        fi
     done
     $HOME/src/license-changer/clean_files.py setup.py &> /dev/null
     git commit -a -m 'global: license change to MIT License' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
