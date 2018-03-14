@@ -1,7 +1,6 @@
 import sys
 sys.path.append('..')
-from change_license import get_first_year_from_file, \
-    YEARS_RE_PATTERN_PYTHON, YEARS_RE_PATTERN_JS
+from change_license import get_first_year_from_file
 from textwrap import dedent
 import re
 
