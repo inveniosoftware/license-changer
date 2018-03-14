@@ -174,7 +174,7 @@ def find_prefix_suffix(text, start, end, inside):
         return text[:s], text[e + len(end):]
 
 
-def change_license_for_rst_content(text, years=None):
+def change_license_for_rst_content(text, years=None, add_missing=False):
     """Remove the license header from RST files."""
     # detect license block end:
     license_block_end = 'submit itself to any jurisdiction.'
@@ -210,8 +210,7 @@ def change_license_for_rst_content(text, years=None):
 
 
 def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
-        end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
-        add_if_missing=True):
+        end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS, add_missing=True):
     """Generic license swapper for block-commend headers."""
     # Try to fetch the first copyright year from an existing header file
     # If it's not there, fall-back to the default
@@ -231,7 +230,7 @@ def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
     else:
         prefix, suffix = pref_suff
 
-    if pref_suff or add_if_missing:
+    if pref_suff or add_missing:
         license_text = formatter.format(years=years)
         out = prefix + license_text + suffix
         return out, True
@@ -239,25 +238,28 @@ def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
         return text, False
 
 
-def change_license_for_jinja_content(text, years='2015-2018'):
+def change_license_for_jinja_content(text, years='2015-2018', add_missing=True):
     text, touched = change_license_in_block_comment(text, years=years,
-        start_str='{#', end_str='#}', formatter=LICENSE_NEW_FULLHEADER_JINJA)
+        start_str='{#', end_str='#}', formatter=LICENSE_NEW_FULLHEADER_JINJA,
+        add_missing=add_missing)
     return text, touched
 
 
-def change_license_for_js_content(text, years='2015-2018'):
+def change_license_for_js_content(text, years='2015-2018', add_missing=True):
     text, touched = change_license_in_block_comment(text, years=years,
-        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS)
+        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
+        add_missing=add_missing)
     return text, touched
 
 
-def change_license_for_html_content(text, years='2015-2018'):
+def change_license_for_html_content(text, years='2015-2018', add_missing=True):
     text, touched = change_license_in_block_comment(text, years=years,
-        start_str='<!--', end_str='-->', formatter=LICENSE_NEW_FULLHEADER_HTML)
+        start_str='<!--', end_str='-->', formatter=LICENSE_NEW_FULLHEADER_HTML,
+        add_missing=add_missing)
     return text, touched
 
 
-def change_license_for_python_content(text, years='2015-2018'):
+def change_license_for_python_content(text, years='2015-2018', add_missing=True):
     # First try to match block starting with utf-8 coding tag
     s_str1 = '# -*- coding: utf-8 -*-'  # Encoding start
     s_str2 = '# This file is part of Invenio'  # License start
@@ -283,8 +285,25 @@ def change_license_for_python_content(text, years='2015-2018'):
                          (s_str2, e_str2), (s_str2, e_str1)]:
         if find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
             text, touched = change_license_in_block_comment(text, years=years,
-                start_str=s_str, end_str=e_str,
+                start_str=s_str, end_str=e_str, add_missing=add_missing,
                 formatter=LICENSE_NEW_FULLHEADER_PYTHON)
+            break
+    return text, touched
+
+
+def change_license_for_any_content(text, years='2015-2018'):
+    """Try to match the license by any matcher."""
+    fns = [
+        change_license_for_jinja_content,
+        change_license_for_js_content,
+        change_license_for_html_content,
+        change_license_for_rst_content,
+        change_license_for_python_content,
+    ]
+    touched = False
+    for fn in fns:
+        text, touched = fn(text, years=years, add_missing=False)
+        if touched:
             break
     return text, touched
 
@@ -322,10 +341,10 @@ def setup_py_update_trove_classifiers(filename):
     fdesc.close()
 
 
-def change_license_for_README_file(filename):
+def change_GPLv2_to_MIT(filename):
     """Change license for LICENSE file. Special treatment."""
     old_content = open(filename, 'r').read()
-    new_content = re.sub(r'GPLv2 license', 'MIT license', old_content)
+    new_content = re.sub(r'GPLv2', 'MIT', old_content)
     if old_content != new_content:
         fdesc = open(filename, 'w')
         fdesc.write(new_content)
@@ -342,6 +361,7 @@ functs = {
     'html': change_license_for_html_content,
     'rst': change_license_for_rst_content,
     'python': change_license_for_python_content,
+    'all': change_license_for_any_content,
 }
 
 @click.command()
@@ -367,13 +387,12 @@ def main(filename):
             fn = functs['html']
         elif extension in ('.html', ) and ('src' not in path_prefix) and ('static' not in path_prefix) and 'templates' in path_prefix:
             fn = functs['jinja']
+        else:
+            fn = functs['all']
 
-        if fn:
-            changed = change_license_for_source_file(filename, fn)
-            if changed:
-                print('[INFO] Changed file', filename)
-            else:
-                print('[INFO] Unchanged file', filename)
+        changed = change_license_for_source_file(filename, fn)
+        if changed:
+            print('[INFO] Changed file', filename)
         else:
             print('[INFO] Ignored file', filename)
 
@@ -381,10 +400,9 @@ def main(filename):
         if filename_basename == 'setup.py':
             setup_py_update_trove_classifiers(filename)
             print('[INFO] Updated Trove', filename)
-        if filename_basename == 'README.rst':
-            changed = change_license_for_README_file(filename)
-            if  changed:
-                print('[INFO] Custom content update', filename)
+        changed = change_GPLv2_to_MIT(filename)
+        if  changed:
+            print('[INFO] Found and updated GPLv2 -> MIT', filename)
 
 
 if __name__ == '__main__':
