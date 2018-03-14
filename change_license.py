@@ -262,8 +262,18 @@ def change_license_for_python_content(text, years='2015-2018'):
     s_str = '# -*- coding: utf-8 -*-'
     e_str = 'submit itself to any jurisdiction.'
 
+    touched = False
+
+    # Remove leading comment blocks
+    i = 0
+    text_sp = text.split('\n')
+    while re.match(r'^\s*#\s*$', text_sp[i]):
+        i += 1
+        touched = True
+    text = '\n'.join(text_sp[i:])
+
     if find_prefix_suffix(text, s_str, e_str, NEW_LICENSE_SUBSTR):
-        return text
+        return text, touched
     elif find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
         text, touched = change_license_in_block_comment(text, years=years,
             start_str=s_str, end_str=e_str,

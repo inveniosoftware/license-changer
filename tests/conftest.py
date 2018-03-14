@@ -43,6 +43,8 @@ def example_contents():
         # TODO: Python not implemented
         ('python_1.py', 'python_1.out.py'),
         ('python_2.py', 'python_2.out.py'),
+        ('python_3.py', 'python_3.out.py'),
+        ('python_4.py', 'python_4.out.py'),
     ]
     # Load all files contents
     contents = []
