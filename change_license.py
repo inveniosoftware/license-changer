@@ -297,7 +297,6 @@ def change_license_for_any_content(text, years='2015-2018'):
         change_license_for_jinja_content,
         change_license_for_js_content,
         change_license_for_html_content,
-        change_license_for_rst_content,
         change_license_for_python_content,
     ]
     touched = False
