@@ -45,6 +45,7 @@ def example_contents():
         ('python_2.py', 'python_2.out.py'),
         ('python_3.py', 'python_3.out.py'),
         ('python_4.py', 'python_4.out.py'),
+        ('python_5.py', 'python_5.out.py'),
     ]
     # Load all files contents
     contents = []
