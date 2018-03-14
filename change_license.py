@@ -288,7 +288,7 @@ def change_license_for_python_content(text, years='2015-2018', add_missing=True)
                 start_str=s_str, end_str=e_str, add_missing=add_missing,
                 formatter=LICENSE_NEW_FULLHEADER_PYTHON)
             break
-    if add_missing:
+    if not touched and add_missing:
         text, touched = change_license_in_block_comment(text, years=years,
             start_str=s_str1, end_str=e_str2, add_missing=add_missing,
             formatter=LICENSE_NEW_FULLHEADER_PYTHON)
@@ -358,13 +358,26 @@ def change_GPLv2_to_MIT(filename):
 
 
 # Mapping from filetype to text changer function
-functs = {
+FILETYPE2FN = {
     'jinja': change_license_for_jinja_content,
     'js': change_license_for_js_content,
     'html': change_license_for_html_content,
     'rst': change_license_for_rst_content,
     'python': change_license_for_python_content,
     'all': change_license_for_any_content,
+}
+
+# Mapping from filename to text changer function
+FILENAME2FN = {
+    '.editorconfig': change_license_for_python_content,
+    '.travis.yml': change_license_for_python_content,
+    'MANIFEST.in': change_license_for_python_content,
+    'babel.ini': change_license_for_python_content,
+    'pytest.ini': change_license_for_python_content,
+    'requirements-devel.txt': change_license_for_python_content,
+    'run-tests.sh': change_license_for_python_content,
+    'setup.cfg': change_license_for_python_content,
+    'config': change_license_for_python_content,
 }
 
 @click.command()
@@ -380,18 +393,20 @@ def main(filename):
     else:
         path_prefix, extension = os.path.splitext(filename)
         fn = None
-        if extension in ('.rst', ):
-            fn = functs['rst']
+        if filename_basename in FILENAME2FN:
+            fn = FILENAME2FN[filename_basename]
+        elif extension in ('.rst', ):
+            fn = FILETYPE2FN['rst']
         elif extension in ('.py', ):
-            fn = functs['python']
+            fn = FILETYPE2FN['python']
         elif extension in ('.js', '.scss', ):
-            fn = functs['js']
+            fn = FILETYPE2FN['js']
         elif extension in ('.html', ) and ('src' in path_prefix or 'static' in path_prefix):
-            fn = functs['html']
+            fn = FILETYPE2FN['html']
         elif extension in ('.html', ) and ('src' not in path_prefix) and ('static' not in path_prefix) and 'templates' in path_prefix:
-            fn = functs['jinja']
+            fn = FILETYPE2FN['jinja']
         else:
-            fn = functs['all']
+            fn = FILETYPE2FN['all']
 
         changed = change_license_for_source_file(filename, fn)
         if changed:

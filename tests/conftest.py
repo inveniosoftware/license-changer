@@ -47,6 +47,13 @@ def example_contents():
         ('python_4.py', 'python_4.out.py'),
         ('python_5.py', 'python_5.out.py'),
         ('python_6.py', 'python_6.out.py'),
+        # Ignore already parsed
+        ('python_1.out.py', 'python_1.out.py'),
+        ('python_2.out.py', 'python_2.out.py'),
+        ('python_3.out.py', 'python_3.out.py'),
+        ('python_4.out.py', 'python_4.out.py'),
+        ('python_5.out.py', 'python_5.out.py'),
+        ('python_6.out.py', 'python_6.out.py'),
         ('all_1', 'all_1.out'),
     ]
     # Load all files contents
@@ -58,6 +65,6 @@ def example_contents():
             in_cnt = fp.read()
         with open(os.path.join(dpath, out_fn), 'r') as fp:
             out_cnt = fp.read()
-        contents.append((filetype, in_cnt, out_cnt))
+        contents.append((filetype, in_fn, in_cnt, out_cnt))
     return contents
 
