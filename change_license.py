@@ -246,8 +246,24 @@ def change_license_for_jinja_content(text, years='2015-2018', add_missing=True):
 
 
 def change_license_for_js_content(text, years='2015-2018', add_missing=True):
+    if NEW_LICENSE_SUBSTR in text:
+        return text, False
+    s_str = '// This file is part of Invenio'
+    e_str = 'submit itself to any jurisdiction.'
+    if find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
+        text, touched = change_license_in_block_comment(text, years=years,
+            start_str=s_str, end_str=e_str, formatter=LICENSE_NEW_FULLHEADER_JS,
+            add_missing=add_missing)
+    else:
+        text, touched = change_license_in_block_comment(text, years=years,
+            start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
+            add_missing=add_missing)
+    return text, touched
+
+
+def change_license_for_scss_content(text, years='2015-2018', add_missing=True):
     text, touched = change_license_in_block_comment(text, years=years,
-        start_str='/*', end_str='*/', formatter=LICENSE_NEW_FULLHEADER_JS,
+        start_str='//', end_str='//', formatter=LICENSE_NEW_FULLHEADER_JS,
         add_missing=add_missing)
     return text, touched
 
@@ -264,7 +280,7 @@ def change_license_for_python_content(text, years='2015-2018', add_missing=True)
     s_str1 = '# -*- coding: utf-8 -*-'  # Encoding start
     s_str2 = '# This file is part of Invenio'  # License start
 
-    e_str1 = 'Boston, MA 02D111-1307, USA.'  # GPL part
+    e_str1 = '111-1307, USA.'  # GPL part
     e_str2 = 'submit itself to any jurisdiction.'  # CERN part
 
     touched = False
@@ -393,6 +409,9 @@ def main(filename):
     else:
         path_prefix, extension = os.path.splitext(filename)
         fn = None
+        if extension in ('.xsl',):
+            print('[INFO] Purposedly skipped file', filename)
+            break
         if filename_basename in FILENAME2FN:
             fn = FILENAME2FN[filename_basename]
         elif extension in ('.rst', ):

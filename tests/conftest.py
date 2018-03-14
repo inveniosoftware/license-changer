@@ -29,6 +29,8 @@ def example_contents():
 
         # js_3 has no header, add it
         ('js_3.js', 'js_3.out.js'),
+        # //-style comments instead of /* */
+        ('js_4.scss', 'js_4.out.scss'),
         ('html_1.html', 'html_1.out.html'),
 
         # Ignore already parsed
