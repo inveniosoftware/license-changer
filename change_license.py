@@ -411,7 +411,7 @@ def main(filename):
         fn = None
         if extension in ('.xsl',):
             print('[INFO] Purposedly skipped file', filename)
-            break
+            return
         if filename_basename in FILENAME2FN:
             fn = FILENAME2FN[filename_basename]
         elif extension in ('.rst', ):
