@@ -259,8 +259,11 @@ def change_license_for_html_content(text, years='2015-2018'):
 
 def change_license_for_python_content(text, years='2015-2018'):
     # First try to match block starting with utf-8 coding tag
-    s_str = '# -*- coding: utf-8 -*-'
-    e_str = 'submit itself to any jurisdiction.'
+    s_str1 = '# -*- coding: utf-8 -*-'  # Encoding start
+    s_str2 = '# This file is part of Invenio'  # License start
+
+    e_str1 = 'Boston, MA 02D111-1307, USA.'  # GPL part
+    e_str2 = 'submit itself to any jurisdiction.'  # CERN part
 
     touched = False
 
@@ -272,17 +275,17 @@ def change_license_for_python_content(text, years='2015-2018'):
         touched = True
     text = '\n'.join(text_sp[i:])
 
-    if find_prefix_suffix(text, s_str, e_str, NEW_LICENSE_SUBSTR):
+    if NEW_LICENSE_SUBSTR in text:
         return text, touched
-    elif find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
-        text, touched = change_license_in_block_comment(text, years=years,
-            start_str=s_str, end_str=e_str,
-            formatter=LICENSE_NEW_FULLHEADER_PYTHON)
-    else:
-        s_str = '# This file is part of Invenio'
-        text, touched =  change_license_in_block_comment(text, years=years,
-            start_str=s_str, end_str=e_str,
-            formatter=LICENSE_NEW_FULLHEADER_PYTHON)
+    # Try to match possible license blocks starting from the "widest",
+    # i.e.: the ones encapsulating the most text
+    for s_str, e_str in [(s_str1, e_str2), (s_str1, e_str1),
+                         (s_str2, e_str2), (s_str2, e_str1)]:
+        if find_prefix_suffix(text, s_str, e_str, OLD_LICENSE_SUBSTR):
+            text, touched = change_license_in_block_comment(text, years=years,
+                start_str=s_str, end_str=e_str,
+                formatter=LICENSE_NEW_FULLHEADER_PYTHON)
+            break
     return text, touched
 
 
