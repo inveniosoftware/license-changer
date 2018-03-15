@@ -136,7 +136,7 @@ def change_license_for_LICENSE_file(filename):
     fdesc = open(filename, 'w')
     fdesc.write(LICENSE_NEW_HEADER)
     fdesc.write('\n')
-    fdesc.write('Copyright (C) ' + ', '.join(get_commit_years('.')) + ' CERN.')
+    fdesc.write('Copyright (C) ' + get_years_string_from_file(filename) + ' CERN.')
     fdesc.write('\n\n')
     fdesc.write(LICENSE_NEW_BODY)
     fdesc.close()
