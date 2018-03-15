@@ -19,6 +19,8 @@ change_license () {
     git commit -a -m 'global: license change to MIT License' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
     $CHANGER_DIR/clean_files.py setup.py &> /dev/null
     git commit -a -m 'installation: removed pytest-cache dependency' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    $HOME/src/license-changer/update_travis.py .travis.yml
+    git commit -a -m 'global: add allow_failures to travis config' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
     git grep -n "distributed in the hope that" | cat
     git grep -n "GPL" | cat
 }
