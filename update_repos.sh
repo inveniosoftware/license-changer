@@ -5,7 +5,8 @@ TEMPDIR="tmpsrc"
 if [ ! -d "$HOME/$TEMPDIR" ]; then
     mkdir $HOME/$TEMPDIR
 fi
-declare -a repos=("dcxml"
+declare -a repos=(
+                  "dcxml"
                   "citeproc-py-styles"
                   "invenio-marc21"
                   "invenio-theme"
@@ -36,7 +37,8 @@ declare -a repos=("dcxml"
                   "invenio-mail"
                   "invenio-jsonschemas"
                   "invenio-indexer"
-                  "invenio-i18n")
+                  "invenio-i18n"
+                  )
 
 for repo in "${repos[@]}"
 do
@@ -51,7 +53,7 @@ do
     git checkout -b license-change &> /dev/null
     for file in $(git ls-files)
     do
-        if [[ $repo == "invenio-*" ]]; then
+        if [[ $repo == invenio* ]]; then
             $HOME/src/license-changer/change_license.py $file &> /dev/null
         else
             # Pass repository name as second parameter (license formatting)
@@ -59,8 +61,9 @@ do
             $HOME/src/license-changer/change_license.py $file $repo &> /dev/null
         fi
     done
-    $HOME/src/license-changer/clean_files.py setup.py &> /dev/null
     git commit -a -m 'global: license change to MIT License' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    $HOME/src/license-changer/clean_files.py setup.py &> /dev/null
+    git commit -a -m 'installation: removed pytest-cache dependency' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
     git grep -n "distributed in the hope that" | cat
     git grep -n "GPL" | cat
 done
