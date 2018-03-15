@@ -11,5 +11,6 @@ Usage::
   $ git checkout -b license-change
   $ for file in $(git ls-files); do change_license.py $file; done
   $ clean_files.py setup.py
+  $ update_travis.py .travis.yml
   $ git commit -a -s -m 'global: license change to MIT License'
   $ git grep 'distributed in the hope that'

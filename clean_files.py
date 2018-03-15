@@ -5,9 +5,7 @@ Clean some files:
 * Remove pytest-cache from setup.py file (as it's now part of pytest)
 
 Usage:
-  $ cd private/src/invenio-oaiserver
-  $ git checkout -b license-change
-  $ clean_files setup.py
+  $ ./clean_files.py setup.py
   $ git commit -a -s -m 'global: cleanup of dependencies'
 """
 
