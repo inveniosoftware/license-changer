@@ -141,6 +141,9 @@ main () {
         fi
         # TODO: Contributing guide temporarily disabled
         # update_contributing_file
+
+        # TODO: uncomment for actual live run
+        # git push upstream license-change --force
     done
 
     echo "All repos UPDATED"
