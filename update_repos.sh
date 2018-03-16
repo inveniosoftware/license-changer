@@ -1,6 +1,7 @@
 #!/bin/sh
 
-CHANGER_DIR=$HOME/work/license-changer
+# Directory of the license-changer repository
+CHANGER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # This changes license in every file and commits the changes
 change_license () {
@@ -45,12 +46,14 @@ delete_files () {
 # This edits the CHANGES.rst file adding only the release 1.0.0
 edit_changes_file () {
     cp $CHANGER_DIR/templates/changes_template.rst CHANGES.rst
-    git commit -a -m 'global: prepare initial release' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    git add CHANGES.rst
+    git commit -a -m 'global: prepared CHANGES.rst file for initial release' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 }
 
 # This copies the CONTRIBUTING.rst file from invenio to every repo from inveniosoftware
 update_contributing_file () {
     cp $CHANGER_DIR/templates/contributing_template.rst CONTRIBUTING.rst
+    git add CONTRIBUTING.rst
     git commit -a -m 'global: harmonize contributing guidelines' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 }
 
@@ -95,9 +98,14 @@ main () {
         "invenio-i18n"
     )
 
-    declare -a files=(
-        RELEASE-NOTES.rst
+    declare -a delfiles=(
         .lgtm
+    )
+
+    declare -a keepreleasenotes=(
+        "dcxml"
+        "citeproc-py-styles"
+        "invenio-search-js"
     )
 
     for repo in "${repos[@]}"
@@ -113,9 +121,24 @@ main () {
         git checkout -b license-change &> /dev/null
 
         change_license $TEMPDIR $repo
-        delete_files "${files[@]}"
-        edit_changes_file $repo
-        update_contributing_file
+        delete_files "${delfiles[@]}"
+
+        # Delete and sync release notes, but exclude some repositories
+        del_rel_notes=1
+        for repo2 in "${keepreleasenotes[@]}"
+        do
+            if [[ $repo == $repo2 ]]; then
+                del_rel_notes=0
+                break
+            fi
+        done
+        if [ $del_rel_notes -gt 0 ]; then
+            delete_files "${delfilesinvenio[@]}"
+            edit_changes_file $repo
+            echo "Updated release notes and changes file" $repo
+        fi
+        # TODO: Contributing guide temporarily disabled
+        # update_contributing_file
     done
 
     echo "All repos UPDATED"
