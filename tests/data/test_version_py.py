@@ -30,6 +30,5 @@ def test_change_version_py():
         from __future__ import absolute_import, print_function
 
         __version__ = '1.0.0'""")
-    lol = change_version_py(text1)
 
     assert change_version_py(text1) == expected1
