@@ -52,5 +52,4 @@ def test_pypy_classifier():
         * Free software: MIT license
         * Documentation: https://invenio-marc21.readthedocs.io/""")
 
-    out_text = update_readme_rst(text1)
-    assert out_text == exp_text1
+    assert update_readme_rst(text1) == exp_text1

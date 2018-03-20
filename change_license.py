@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 from collections import defaultdict
+from utils import update_readme_rst, update_setup_py
 
 
 OLD_LICENSE_SUBSTR = 'modify it under the terms of the GNU'
@@ -357,6 +358,18 @@ def change_license_for_source_file(filename, change_function):
     return False
 
 
+def apply_fn_on_filename(filename, fn):
+    with open(filename, 'r') as fp:
+        content = fp.read()
+    orig_cnt = str(content)
+    out = fn(content)
+    if out != orig_cnt:
+        with open(filename, 'w') as fp:
+            fp.write(out)
+        return True
+    return False
+
+
 def get_first_year_from_file(content, pattern=FIRST_YEAR_RE_PATTERN):
     "Update copyright year list for filename if the current year is not listed."
     first_year = None
@@ -389,7 +402,6 @@ def change_GPLv2_to_MIT(filename):
     return False
 
 
-
 # Mapping from filetype to text changer function
 FILETYPE2FN = {
     'jinja': change_license_for_jinja_content,
@@ -400,7 +412,7 @@ FILETYPE2FN = {
     'all': change_license_for_any_content,
 }
 
-# Mapping from filename to text changer function
+# Mapping from filename to text changer function, which arent' type-specific
 FILENAME2FN = {
     '.editorconfig': change_license_for_python_content,
     '.travis.yml': change_license_for_python_content,
@@ -456,7 +468,12 @@ def main(filename, projectname):
         # Post-processors
         if filename_basename == 'setup.py':
             setup_py_update_trove_classifiers(filename)
-            print('[INFO] Updated Trove', filename)
+            apply_fn_on_filename(filename, update_setup_py)
+            print('[INFO] Post processed', filename)
+        elif filename_basename == 'README.rst':
+            apply_fn_on_filename(filename, update_readme_rst)
+
+        # Do a final regexpr for GPLv2
         changed = change_GPLv2_to_MIT(filename)
         if  changed:
             print('[INFO] Found and updated GPLv2 -> MIT', filename)

@@ -80,7 +80,6 @@ def remove_readme_rst_badges(text):
 
 
 def change_readme_rst_tag_badge(text):
-
     def badge_img(line):
         m = re.match(RE_README_TAG_BADGE, line)
         if m:
