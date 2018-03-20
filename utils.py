@@ -10,8 +10,8 @@ RE_INVENIO_SEARCH_DEV_DEP = re.compile(r"(invenio_)(.*)( = )(.*)(1.0.0)([ab]+[0-
 RE_INVENIO_VERSION_PY = re.compile(r"(__version__)( = )(.*)(1.0.0)([ab]+[0-9]{1,2})(.*)")
 
 ## README.rst
-RE_README_TAG_BADGE = re.compile(r"(.*)(img.shields.io/pypi/dm/)(invenio-.*)")
-RE_README_TAG_URL = re.compile(r"(.*)(pypi.python.org/pypi/)(invenio-.*)")
+RE_README_TAG_BADGE = re.compile(r"(.*)(img.shields.io/pypi/dm/)(.*)")
+RE_README_TAG_URL = re.compile(r"(.*)(pypi.python.org/pypi/)(.*)")
 
 # Constants
 TROVE_DEV_STATUS = "Development Status :: 5 - Production/Stable"

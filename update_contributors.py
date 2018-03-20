@@ -45,10 +45,10 @@ CONTRIBUTORS_FILE = 'AUTHORS.rst'
 
 LICENSE = """\
 ..
-    This file is part of Invenio.
+    This file is part of {name}.
     Copyright (C) 2016-2018 CERN.
 
-    Invenio is free software; you can redistribute it and/or modify it
+    {name} is free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
 
 """
@@ -70,7 +70,7 @@ def _get_name(author):
     return CONTRIBUTORS.get(author)
 
 
-def update_contributors(repository):
+def update_contributors(repository, projectname):
     """Regenerate the content of AUTHORS.rst."""
 
     task = subprocess.Popen('git -C {0} log --pretty=format:"%aN" |'
@@ -97,7 +97,7 @@ def update_contributors(repository):
             unique_authors.append(author_name)
 
     authors_file = open(os.path.join(repository, CONTRIBUTORS_FILE), 'w')
-    authors_file.write(LICENSE)
+    authors_file.write(LICENSE.format(name=projectname))
     authors_file.write("Contributors\n")
     authors_file.write("============\n")
     authors_file.write("\n")
@@ -108,8 +108,9 @@ def update_contributors(repository):
 
 @click.command()
 @click.argument('repository', type=click.Path(exists=True))
-def main(repository):
-    update_contributors(repository)
+@click.argument('projectname', type=str, default='Invenio')
+def main(repository, projectname):
+    update_contributors(repository, projectname)
 
 
 if __name__ == '__main__':

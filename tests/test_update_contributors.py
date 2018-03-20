@@ -16,7 +16,7 @@ def test_setup_file_cleanup():
     data_folder = os.path.join(os.path.dirname(__file__), 'data')
     output_file = os.path.join(data_folder, 'AUTHORS_out.rst')
 
-    update_contributors('.')
-    # update_contributors('.') will create AUTHORS.rst in the current directory
+    update_contributors('.', 'Invenio')
+    # update_contributors('.', 'Invenio') will create AUTHORS.rst in the current directory
     assert filecmp.cmp(output_file, 'AUTHORS.rst')
     os.remove('AUTHORS.rst')

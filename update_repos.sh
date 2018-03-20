@@ -16,7 +16,7 @@ change_license () {
             $CHANGER_DIR/change_license.py $file $repo &> /dev/null
         fi
     done
-    git commit -a -m 'global: license change to MIT License' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    git commit -a -m 'global: license change and files cleanup' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
     $CHANGER_DIR/clean_files.py setup.py &> /dev/null
     git commit -a -m 'installation: removed pytest-cache dependency' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
     $CHANGER_DIR/update_travis.py .travis.yml
@@ -48,7 +48,7 @@ delete_files () {
 # This edits the CHANGES.rst file adding only the release 1.0.0
 edit_changes_file () {
     # Returns 1 or 2 if files differ or CHANGES.rst doesn't exist
-    if diff $CHANGER_DIR/templates/changes_template.rst CHANGES.rst ; then
+    if diff $CHANGER_DIR/templates/changes_template.rst CHANGES.rst &> /dev/null; then
         cp $CHANGER_DIR/templates/changes_template.rst CHANGES.rst
         git add CHANGES.rst
         git commit -a -m 'global: prepared CHANGES.rst file for initial release' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
@@ -149,6 +149,11 @@ main () {
             edit_changes_file $repo
             echo "Updated release notes and changes file" $repo
         fi
+
+        # Update AUTHORS.rst file
+        $CHANGER_DIR/update_contributors.py $HOME/$TEMPDIR/$repo
+        git commit -a -m 'global: Updated AUTHORS.rst' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+
         # TODO: Contributing guide temporarily disabled
         # update_contributing_file
 

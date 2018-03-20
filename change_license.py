@@ -46,7 +46,7 @@ LICENSE_NEW_FULLHEADER_JS = """/*
  */"""
 
 LICENSE_NEW_FULLHEADER_RST = """..
-    This file is part of Invenio.
+    This file is part of {name}.
     Copyright (C) {years} CERN.
 
     {name} is free software; you can redistribute it and/or modify it
