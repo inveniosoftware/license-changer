@@ -44,6 +44,14 @@ LICENSE_NEW_FULLHEADER_JS = """/*
  * under the terms of the MIT License; see LICENSE file for more details.
  */"""
 
+LICENSE_NEW_FULLHEADER_RST = """..
+    This file is part of Invenio.
+    Copyright (C) {years} CERN.
+
+    {name} is free software; you can redistribute it and/or modify it
+    under the terms of the MIT License; see LICENSE file for more details.
+"""
+
 LICENSE_NEW_FULLHEADER_HTML = """<!--
   This file is part of {name}.
   Copyright (C) {years} CERN.
@@ -175,7 +183,7 @@ def find_prefix_suffix(text, start, end, inside):
         return text[:s], text[e + len(end):]
 
 
-def change_license_for_rst_content(text, years=None, add_missing=False):
+def del_license_for_rst_content(text, years=None, add_missing=False):
     """Remove the license header from RST files."""
     # detect license block end:
     license_block_end = 'submit itself to any jurisdiction.'
@@ -272,6 +280,15 @@ def change_license_for_scss_content(text, years='2015-2018', add_missing=True):
 def change_license_for_html_content(text, years='2015-2018', add_missing=True):
     text, touched = change_license_in_block_comment(text, years=years,
         start_str='<!--', end_str='-->', formatter=LICENSE_NEW_FULLHEADER_HTML,
+        add_missing=add_missing)
+    return text, touched
+
+
+def change_license_for_rst_content(text, years='2015-2018', add_missing=True):
+    s_str = '..\n    This file is part of'
+    e_str = 'submit itself to any jurisdiction.'
+    text, touched = change_license_in_block_comment(text, years=years,
+        start_str=s_str, end_str=e_str, formatter=LICENSE_NEW_FULLHEADER_RST,
         add_missing=add_missing)
     return text, touched
 

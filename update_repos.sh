@@ -47,9 +47,14 @@ delete_files () {
 
 # This edits the CHANGES.rst file adding only the release 1.0.0
 edit_changes_file () {
-    cp $CHANGER_DIR/templates/changes_template.rst CHANGES.rst
-    git add CHANGES.rst
-    git commit -a -m 'global: prepared CHANGES.rst file for initial release' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    # Returns 1 or 2 if files differ or CHANGES.rst doesn't exist
+    if diff $CHANGER_DIR/templates/changes_template.rst CHANGES.rst ; then
+        cp $CHANGER_DIR/templates/changes_template.rst CHANGES.rst
+        git add CHANGES.rst
+        git commit -a -m 'global: prepared CHANGES.rst file for initial release' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+    else
+        echo "CHANGES.rst file is up to date. No changes made"
+    fi
 }
 
 # This copies the CONTRIBUTING.rst file from invenio to every repo from inveniosoftware
@@ -102,6 +107,11 @@ main () {
 
     declare -a delfiles=(
         .lgtm
+    )
+
+    declare -a delfilesinvenio=(
+        RELEASE-NOTES.rst
+        MAINTAINERS
     )
 
     declare -a keepreleasenotes=(
