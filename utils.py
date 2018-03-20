@@ -178,6 +178,7 @@ def change_version_py(text):
             new_text.append("{0}{1}{2}{3}{5}".format(*m.groups()))
         else:
             new_text.append(line)
+    return '\n'.join(new_text)
 
 
 def update_manifest_in(text):
