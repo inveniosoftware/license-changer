@@ -1,4 +1,5 @@
 import re
+from textwrap import dedent
 ## Compiled regular expression pattern
 ## setup.py
 RE_DEV_STATUS = re.compile(r"(.*)('Development Status ::.*')(.*)")
@@ -102,4 +103,58 @@ def update_readme_rst(text):
     ]
     for fn in functs:
         text = fn(text)
+    return text
+
+
+def remove_pypy_from_travis_yml(text):
+    "Remove pypy dependencies from travis.yml file."
+
+    def pypy_trove(line):
+        return '- "pypy"' not in line
+
+    matches = [
+        (
+            ("matrix:\n"
+            "  fast_finish: true\n"
+            "  allow_failures:\n"
+            "    - python: pypy\n"
+            "\n"),
+            ("matrix:\n"
+            "  fast_finish: true\n"
+            "\n")
+        ),
+        (
+            ("matrix:\n"
+             "  allow_failures:\n"
+             "    - python: pypy\n"
+             "  include:\n"
+             "    - python: pypy\n"
+             "      env:"
+             ),
+            ("matrix:\n"
+             "  include:\n"
+             "      env:"),
+        ),
+        (
+            ("matrix:\n"
+             "  fast_finish: true\n"
+             "  allow_failures:\n"
+             "    - python: pypy\n"
+             "  include:\n"
+             "    - python: pypy\n"
+             "      env:"
+             ),
+            ("matrix:\n"
+             "  fast_finish: true\n"
+             "  include:\n"
+             "      env:"),
+        )
+    ]
+
+    text = filter_text(text, pypy_trove)
+
+    for old, new in matches:
+        import ipdb; ipdb.set_trace()
+        text = text.replace(old, new)
+
     return text
