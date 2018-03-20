@@ -17,13 +17,16 @@ import subprocess
 import click
 
 
-with open('./contributors.yaml') as f:
+contributors = os.path.join(os.path.dirname(__file__), 'contributors.yaml')
+with open(contributors) as f:
     CONTRIBUTORS = yaml.load(f)
 
 # List of authors that should not be added to the contributors file
 SKIPPED_AUTHORS = ['',
                    'Invenio',
-                   'Invenio-Developers']
+                   'Invenio-Developers',
+                   'Cody',  # Cody was a bot from QuantifiedCode
+                   ]
 
 # There are some special cases - e.g. when users are not putting their full
 # name in the commit message, typos, etc.
