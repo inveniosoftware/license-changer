@@ -46,6 +46,5 @@ def test_remove_pypy_from_travis_yml():
           env: EXTRAS=all,sqlite REQUIREMENTS=release SQLALCHEMY_DATABASE_URI="sqlite:///test.db" ES_HOST=127.0.0.1 ES_VERSION=2.2.0
     """)
 
-    import ipdb; ipdb.set_trace()
     out = remove_pypy_from_travis_yml(text)
     assert out == expected
