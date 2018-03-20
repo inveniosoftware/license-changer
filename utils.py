@@ -13,14 +13,20 @@ RE_INVENIO_VERSION_PY = re.compile(r"(__version__)( = )(.*)(1.0.0)([ab]+[0-9]{1,
 RE_README_TAG_BADGE = re.compile(r"(.*)(img.shields.io/pypi/dm/)(invenio-.*)")
 RE_README_TAG_URL = re.compile(r"(.*)(pypi.python.org/pypi/)(invenio-.*)")
 
+## MANIFEST.in
+RE_MANIFEST_LINE = re.compile(r"(?P<prefix>^(recursive-)?(in)?(ex)?clude )(?P<files>.*)")
+
 # Constants
 TROVE_DEV_STATUS = "Development Status :: 5 - Production/Stable"
+
 
 def filter_text(text, fn):
     return '\n'.join(filter(fn, text.split('\n')))
 
+
 def map_text(text, fn):
     return '\n'.join(map(fn, text.split('\n')))
+
 
 def remove_setup_py_pypi_classifier(text):
     def pypy_trove(line):
@@ -99,6 +105,7 @@ def change_readme_rst_tag_badge(text):
     text = map_text(text, badge_target)
     return text
 
+
 def update_readme_rst(text):
     functs = [
         remove_readme_rst_badges,
@@ -172,4 +179,22 @@ def change_version_py(text):
         else:
             new_text.append(line)
 
+
+def update_manifest_in(text):
+    files_to_delete = set([
+        '.lgtm',
+        'MAINTAINERS',
+        'RELEASE-NOTES.rst'
+    ])
+
+    new_text = []
+    for line in text.split('\n'):
+        m = re.search(RE_MANIFEST_LINE, line)
+        if m:
+            files = m.group('files').split(' ')
+            result = [file for file in files if file not in files_to_delete]
+            if result:
+                new_text.append(m.group('prefix') + ' '.join(result))
+        else:
+            new_text.append(line)
     return '\n'.join(new_text)
