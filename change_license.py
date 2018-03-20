@@ -227,8 +227,7 @@ def change_license_in_block_comment(text, years='2015-2018', start_str='/*',
     years = get_years_string(year) if year else years
 
     # If new license is found, skip
-    new_pref_suff = find_prefix_suffix(text, start_str, end_str, NEW_LICENSE_SUBSTR)
-    if new_pref_suff:
+    if NEW_LICENSE_SUBSTR in text:
         return text, False
 
     # Try to find old license
