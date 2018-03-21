@@ -16,6 +16,8 @@ import subprocess
 
 import click
 
+from change_license import get_years_string_from_file
+
 
 contributors = os.path.join(os.path.dirname(__file__), 'contributors.yaml')
 with open(contributors) as f:
@@ -46,7 +48,7 @@ CONTRIBUTORS_FILE = 'AUTHORS.rst'
 LICENSE = """\
 ..
     This file is part of {name}.
-    Copyright (C) 2016-2018 CERN.
+    Copyright (C) {years} CERN.
 
     {name} is free software; you can redistribute it and/or modify it
     under the terms of the MIT License; see LICENSE file for more details.
@@ -96,8 +98,10 @@ def update_contributors(repository, projectname):
         if author_name and author_name not in unique_authors:
             unique_authors.append(author_name)
 
-    authors_file = open(os.path.join(repository, CONTRIBUTORS_FILE), 'w')
-    authors_file.write(LICENSE.format(name=projectname))
+    authors_file_path = os.path.join(repository, CONTRIBUTORS_FILE)
+    authors_file = open(authors_file_path, 'w')
+    years = get_years_string_from_file(authors_file_path)
+    authors_file.write(LICENSE.format(name=projectname, years=years))
     authors_file.write("Contributors\n")
     authors_file.write("============\n")
     authors_file.write("\n")

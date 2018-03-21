@@ -64,3 +64,25 @@ def test_update_manifest_in():
         recursive-exclude * __pycache__""")
 
     assert update_manifest_in(text1) == expected1
+
+    text1 = dedent("""\
+        include .lgtm MAINTAINERS RELEASE-NOTES.rst
+        include .lgtm MAINTAINERS AUTHORS.rst
+        include .lgtm
+        include .MAINTAINERS RELEASE-NOTES.rst
+        include RELEASE-NOTES.rst
+        recursive-include * RELEASE-NOTES.rst
+        recursive-include RELEASE-NOTES.rst
+        recursive-exclude * *.py[co] .lgtm
+        recursive-exclude * *.py[co] .lgtm MAINTAINERS
+        recursive-exclude * __pycache__""")
+
+    expected1 = dedent("""\
+        include AUTHORS.rst
+        recursive-include *
+        recursive-exclude * *.py[co]
+        recursive-exclude * *.py[co]
+        recursive-exclude * __pycache__""")
+
+    out = update_manifest_in(expected1)
+    assert out == expected1

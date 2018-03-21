@@ -18,7 +18,8 @@ import os
 import re
 import subprocess
 from collections import defaultdict
-from utils import update_readme_rst, update_setup_py
+from utils import update_readme_rst, update_setup_py, update_manifest_in, \
+    change_version_py, remove_pypy_from_travis_yml
 
 
 OLD_LICENSE_SUBSTR = 'modify it under the terms of the GNU'
@@ -109,7 +110,7 @@ def get_commit_years(filename):
     if out:
         for line in out.split('\n'):
             years[line[0:4]] = 1
-    years = list(years.keys())
+    years = list(years.keys()) or ['2015', ]
     years.sort()
     return years
 
@@ -472,6 +473,12 @@ def main(filename, projectname):
             print('[INFO] Post processed', filename)
         elif filename_basename == 'README.rst':
             apply_fn_on_filename(filename, update_readme_rst)
+        elif filename_basename == 'MANIFEST.in':
+            apply_fn_on_filename(filename, update_manifest_in)
+        elif filename_basename == 'version.py':
+            apply_fn_on_filename(filename, change_version_py)
+        elif filename_basename == '.travis.yml':
+            apply_fn_on_filename(filename, remove_pypy_from_travis_yml)
 
         # Do a final regexpr for GPLv2
         changed = change_GPLv2_to_MIT(filename)

@@ -7,7 +7,7 @@ RE_INVENIO_DEV_DEP = re.compile(r"(?P<prefix>.*)(?P<invenio>invenio-.*)(?P<ver>1
 RE_INVENIO_SEARCH_DEV_DEP = re.compile(r"(invenio_)(.*)( = )(.*)(1.0.0)([ab]+[0-9]{1,2})(.*)")
 
 ## version.py
-RE_INVENIO_VERSION_PY = re.compile(r"(__version__)( = )(.*)(1.0.0)([ab]+[0-9]{1,2})(.*)")
+RE_INVENIO_VERSION_PY = re.compile(r"(__version__)( = )(.*)(1.0.0)(.*)")
 
 ## README.rst
 RE_README_TAG_BADGE = re.compile(r"(.*)(img.shields.io/pypi/dm/)(.*)")
@@ -175,7 +175,7 @@ def change_version_py(text):
     for line in text.split('\n'):
         m = re.search(RE_INVENIO_VERSION_PY, line)
         if m:
-            new_text.append("{0}{1}{2}{3}{5}".format(*m.groups()))
+            new_text.append("__version__ = '1.0.0'")
         else:
             new_text.append(line)
     return '\n'.join(new_text)

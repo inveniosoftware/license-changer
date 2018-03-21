@@ -151,7 +151,13 @@ main () {
         fi
 
         # Update AUTHORS.rst file
-        $CHANGER_DIR/update_contributors.py $HOME/$TEMPDIR/$repo
+        if [[ $repo == invenio* ]]; then
+            $CHANGER_DIR/update_contributors.py $HOME/$TEMPDIR/$repo
+        else
+            # Pass repository name as second parameter (license formatting)
+            # if it's not invenio-*
+            $CHANGER_DIR/update_contributors.py $HOME/$TEMPDIR/$repo $repo
+        fi
         git commit -a -m 'global: Updated AUTHORS.rst' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 
         # TODO: Contributing guide temporarily disabled

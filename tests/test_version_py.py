@@ -32,3 +32,26 @@ def test_change_version_py():
         __version__ = '1.0.0'""")
 
     assert change_version_py(text1) == expected1
+
+    # Shouldn't be changed
+    text = "__version__ = '1.0.0'"
+    assert change_version_py(text) == text
+    text = "__version__ = '0.1.0'"
+    assert change_version_py(text) == text
+    text = "__version__ = '0.3.5'"
+    assert change_version_py(text) == text
+
+    # Should be changed
+    expected = "__version__ = '1.0.0'"  # note the single quotes ''
+    text = "__version__ = '1.0.0a5.dev20170223'"
+    assert change_version_py(text) == expected
+    text = '__version__ = "1.0.0b1.dev20160000"'
+    assert change_version_py(text) == expected
+    text = '__version__ = "1.0.0.dev20170223"'
+    assert change_version_py(text) == expected
+    text = '__version__ = "1.0.0.a1"'
+    assert change_version_py(text) == expected
+    text = '__version__ = "1.0.0a1"'
+    assert change_version_py(text) == expected
+    text = '__version__ = "1.0.0"'
+    assert change_version_py(text) == expected
