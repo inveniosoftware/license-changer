@@ -71,6 +71,7 @@ main () {
         mkdir $HOME/$TEMPDIR
     fi
     declare -a repos=(
+        # Initial stuff
         "dcxml"
         "citeproc-py-styles"
         "invenio-marc21"
@@ -103,6 +104,62 @@ main () {
         "invenio-jsonschemas"
         "invenio-indexer"
         "invenio-i18n"
+        # New repos  (We don't run it for those)
+        #### "pytest-invenio"
+        #### "dojson"
+        #### "Flask-Menu"
+        #### "datacite"
+        #### "jsonresolver"
+        #### "Flask-Breadcrumbs"
+        # SPLIT BATCHES, uncomment Batch by batch
+        ## Batch 1
+        #"dcxml"
+        #"invenio-search-js"
+        #"invenio-cache"
+        #"invenio-config"
+        #"invenio-celery"
+        #"invenio-i18n"
+        #"invenio-db"
+        #"invenio-search"
+        #"invenio-mail"
+        #"invenio-assets"
+        #"invenio-formatter"
+        #"invenio-logging"
+        #"invenio-rest"
+        ###"Flask-Menu"
+        ###"jsonresolver"
+        ###"dojson"
+        #"citeproc-py-styles"
+        ###"datacite"
+        ## Batch 2
+        #"invenio-base"
+        #"invenio-admin"
+        #"invenio-jsonschemas"
+        ###"pytest-invenio"
+        ###"Flask-Breadcrumbs"
+        ## Batch 3
+        #"invenio-app"
+        #"invenio-accounts"
+        #"invenio-theme"
+        #"invenio-records"
+        ## Batch 4
+
+        #"invenio-access"
+        #"invenio-oauth2server"
+        #"invenio-userprofiles"
+        #"invenio-search-ui"
+        ##Batch 5
+        #"invenio-oauthclient"
+        #"invenio-pidstore"
+        ## Batch 6
+        #"invenio-indexer"
+        #"invenio-records-ui"
+        ## Batch 7
+        #"invenio-records-rest"
+        ## Batch 8
+        #"invenio-marc21"
+        ## Batch 9
+        #"invenio-oaiserver"
     )
 
     declare -a delfiles=(
@@ -130,7 +187,7 @@ main () {
             git remote rename origin upstream &> /dev/null
         fi
         cd "$HOME/$TEMPDIR/$repo"
-        git checkout -b license-change &> /dev/null
+        git checkout -b release-1.0.0 &> /dev/null
 
         change_license $TEMPDIR $repo
         delete_files "${delfiles[@]}"
@@ -160,11 +217,20 @@ main () {
         fi
         git commit -a -m 'global: Updated AUTHORS.rst' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 
+        if [[ $repo == invenio* ]]; then
+            $CHANGER_DIR/change_license.py `find . -name 'version.py'` --versionbump=1 &> /dev/null
+        else
+            # Pass repository name as second parameter (license formatting)
+            # if it's not invenio-*
+            $CHANGER_DIR/change_license.py `find . -name 'version.py'` $repo --versionbump=1 &> /dev/null
+        fi
+        git commit -a -m 'release: v1.0.0' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+
         # TODO: Contributing guide temporarily disabled
         # update_contributing_file
 
         # TODO: uncomment for actual live run
-        # git push upstream license-change --force
+        # git push upstream release-1.0.0 --force
     done
 
     echo "All repos UPDATED"

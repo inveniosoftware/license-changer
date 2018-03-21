@@ -429,8 +429,13 @@ FILENAME2FN = {
 @click.command()
 @click.argument('filename', type=click.Path(exists=True))
 @click.argument('projectname', type=str, default='Invenio')
-def main(filename, projectname):
+@click.option('--versionbump')
+def main(filename, projectname, versionbump):
     "Change license of the filename."
+    # If version
+    if versionbump:
+        apply_fn_on_filename(filename, change_version_py)
+        return
     global PROJECT_NAME
     PROJECT_NAME = projectname
 
@@ -475,8 +480,9 @@ def main(filename, projectname):
             apply_fn_on_filename(filename, update_readme_rst)
         elif filename_basename == 'MANIFEST.in':
             apply_fn_on_filename(filename, update_manifest_in)
-        elif filename_basename == 'version.py':
-            apply_fn_on_filename(filename, change_version_py)
+        # Note: version.py changes are run separately now
+        #elif filename_basename == 'version.py':
+        #    apply_fn_on_filename(filename, change_version_py)
         elif filename_basename == '.travis.yml':
             apply_fn_on_filename(filename, remove_pypy_from_travis_yml)
 
