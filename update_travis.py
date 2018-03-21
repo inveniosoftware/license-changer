@@ -6,8 +6,8 @@ Update .travis.yml file:
   builds that are allowed to fail.
 
 Usage:
-  $ ./update_travis.py .travis.yml
-  $ git commit -a -s -m 'global: add allow_failures to travis config'
+  $ ./update_travis.py /path/to/repo/.travis.yml
+  $ git commit -a -s -m 'travis: update pypi password, add allow_failures'
 """
 
 import click
@@ -59,7 +59,7 @@ def add_allow_failures(filename):
 
 
 def _get_pypi_password(repository):
-    """Returns the new pypi password for a given repository."""
+    """Return the new pypi password for a given repository."""
     passwords_file = os.path.join(os.path.dirname(__file__),
                                   'pypi-password-travis.txt')
     with open(passwords_file) as f:
@@ -95,7 +95,7 @@ def update_pypi_passwords(filename):
                     new_file.write(line)
                     continue
                 else:
-                    new_file.write('    secure: {0}\n'.format(new_pass))
+                    new_file.write('    secure: "{0}"\n'.format(new_pass))
                     continue
         new_file.write(line)
     new_file.close()
@@ -107,9 +107,7 @@ def main(filename):
     """Cleanup files."""
     filename_basename = os.path.basename(filename)
     if filename_basename == '.travis.yml':
-        # Since we already added the allow_failures to .travis.yml,
-        # I'm commenting this out to surpress warning messages
-        # add_allow_failures(filename)
+        add_allow_failures(filename)
         update_pypi_passwords(filename)
 
 
