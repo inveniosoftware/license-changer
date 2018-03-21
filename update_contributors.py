@@ -43,6 +43,7 @@ SPECIAL_CASES = {
     'Adrian Tudor Panescu': 'Adrian-Tudor Panescu',
     'Jaime García': 'Jaime Garcia Llopis',
     'Javier Martin': 'Javier Martin Montull',
+    'Odd': 'Odd Trondrud',
 }
 
 # Name of the file for storing the list of contributors
