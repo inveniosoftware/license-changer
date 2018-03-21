@@ -71,39 +71,40 @@ main () {
         mkdir $HOME/$TEMPDIR
     fi
     declare -a repos=(
-        # Initial stuff
-        "dcxml"
-        "citeproc-py-styles"
-        "invenio-marc21"
-        "invenio-theme"
-        "invenio-search-js"
-        "invenio-search-ui"
-        "invenio-search"
-        "invenio-rest"
-        "invenio-records-ui"
-        "invenio-records"
-        "invenio-pidstore"
-        "invenio-oauthclient"
-        "invenio-oauth2server"
-        "invenio-logging"
-        "invenio-formatter"
-        "invenio-db"
-        "invenio-config"
-        "invenio-celery"
-        "invenio-cache"
-        "invenio-base"
-        "invenio-assets"
-        "invenio-app"
-        "invenio-admin"
-        "invenio-accounts"
-        "invenio-access"
-        "invenio-userprofiles"
-        "invenio-records-rest"
-        "invenio-oaiserver"
-        "invenio-mail"
-        "invenio-jsonschemas"
-        "invenio-indexer"
-        "invenio-i18n"
+        ### Initial repositories on the list stuff
+        #"dcxml"
+        #"citeproc-py-styles"
+        #"invenio-marc21"
+        #"invenio-theme"
+        #"invenio-search-js"
+        #"invenio-search-ui"
+        #"invenio-search"
+        #"invenio-rest"
+        #"invenio-records-ui"
+        #"invenio-records"
+        #"invenio-pidstore"
+        #"invenio-oauthclient"
+        #"invenio-oauth2server"
+        #"invenio-logging"
+        #"invenio-formatter"
+        #"invenio-db"
+        #"invenio-config"
+        #"invenio-celery"
+        #"invenio-cache"
+        #"invenio-base"
+        #"invenio-assets"
+        #"invenio-app"
+        #"invenio-admin"
+        #"invenio-accounts"
+        #"invenio-access"
+        #"invenio-userprofiles"
+        #"invenio-records-rest"
+        #"invenio-oaiserver"
+        #"invenio-mail"
+        #"invenio-jsonschemas"
+        #"invenio-indexer"
+        #"invenio-i18n"
+
         # New repos  (We don't run it for those)
         #### "pytest-invenio"
         #### "dojson"
@@ -111,7 +112,8 @@ main () {
         #### "datacite"
         #### "jsonresolver"
         #### "Flask-Breadcrumbs"
-        # SPLIT BATCHES, uncomment Batch by batch
+
+        # Split by batches, uncomment batch by batch
         ## Batch 1
         #"dcxml"
         #"invenio-search-js"
@@ -126,24 +128,25 @@ main () {
         #"invenio-formatter"
         #"invenio-logging"
         #"invenio-rest"
+        #"citeproc-py-styles"
         ###"Flask-Menu"
         ###"jsonresolver"
         ###"dojson"
-        #"citeproc-py-styles"
         ###"datacite"
+
         ## Batch 2
         #"invenio-base"
         #"invenio-admin"
         #"invenio-jsonschemas"
         ###"pytest-invenio"
         ###"Flask-Breadcrumbs"
+
         ## Batch 3
         #"invenio-app"
         #"invenio-accounts"
         #"invenio-theme"
         #"invenio-records"
         ## Batch 4
-
         #"invenio-access"
         #"invenio-oauth2server"
         #"invenio-userprofiles"
@@ -164,11 +167,11 @@ main () {
 
     declare -a delfiles=(
         .lgtm
+        MAINTAINERS
     )
 
     declare -a delfilesinvenio=(
         RELEASE-NOTES.rst
-        MAINTAINERS
     )
 
     declare -a keepreleasenotes=(
@@ -230,7 +233,11 @@ main () {
         # update_contributing_file
 
         # TODO: uncomment for actual live run
-        # git push upstream release-1.0.0 --force
+        git push upstream release-1.0.0 --force
+    done
+    for repo in "${repos[@]}"
+    do
+        echo "https://github.com/inveniosoftware/$repo/compare/master...release-1.0.0"
     done
 
     echo "All repos UPDATED"

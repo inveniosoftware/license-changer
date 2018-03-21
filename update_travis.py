@@ -75,6 +75,10 @@ def update_pypi_passwords(filename):
     lines = old_file.readlines()
     old_file.close()
 
+    # Don't update pypi password for NPM packages
+    if any('provider: npm' in line for line in lines):
+        return
+
     new_file = open(filename, 'w')
     inside_deploy = False
     for line in lines:
