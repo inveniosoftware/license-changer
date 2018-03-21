@@ -40,6 +40,9 @@ SPECIAL_CASES = {
     'Paulina': 'Paulina Lach',
     'Paulina1': 'Paulina Lach',
     'valkyrie': 'Valkyrie Savage',
+    'Adrian Tudor Panescu': 'Adrian-Tudor Panescu',
+    'Jaime García': 'Jaime Garcia Llopis',
+    'Javier Martin': 'Javier Martin Montull',
 }
 
 # Name of the file for storing the list of contributors
@@ -54,6 +57,28 @@ LICENSE = """\
     under the terms of the MIT License; see LICENSE file for more details.
 
 """
+
+BASE_COMMITS = {
+    'invenio': 'c4c292f9b3c3aaf65ea20cb74e4f3ec8ae4adcd9',
+    'invenio-access': '5b2818387c9f833438fa30f67d47f529ecaa0968',
+    'invenio-accounts': 'f97176828348baeb32bf9556001112ba49bcf4b2',
+    'invenio-base': 'd8e31ee5f0e808a9b4cf37d9a987636e53439f32',
+    'invenio-celery': '23dd4cdcc9699ae1a550d024055afbfbe34195ef',
+    'invenio-collections': '99d5df278e5d6981d2a0c19c3abf90c29dcd005d',
+    'invenio-communities': 'c76f30d38c69cb593edd97fee4d5cd690bcd136c',
+    'invenio-deposit': 'aa654f01f9a9bd5b6ec19ae53326f04c4b1b1740',
+    'invenio-formatter': '0733556a2fb8d7c524464b64c4de8b0e2ad0a246',
+    'invenio-oaiharvester': 'a4325a61bc71a4aa4691d673a4bf4449671966f0',
+    'invenio-oauth2server': '094323a759b837272d4a77a7141e80012939782f',
+    'invenio-oauthclient': '7adadb59eab1dde241d2f041088dc79c1e190a56',
+    'invenio-pages': '5f46a3c7194c5ef27f26c04699aa37a6c797afb2',
+    'invenio-pidstore': 'b44142197566ef2ab6ecbed6d75dafd1e14da41b',
+    'invenio-previewer': 'ede10b7f6172f81dda3a9f6695217892897dda08',
+    'invenio-records': 'a685b1d0e0d62798619f3e084605bf42281b1f1c',
+    'invenio-search': '1cd5740aae6022ffb0a781c3d63dd3b26b83dc61',
+    'invenio-sequencegenerator': '1b55943e1f5e8dbf992b9d44412b2a783c415068',
+    'invenio-webhooks': '43e2f1e7670781d57f7d1cf9c03bdf91f9afe23b',
+}
 
 
 def _get_name(author):
@@ -74,11 +99,21 @@ def _get_name(author):
 
 def update_contributors(repository, projectname):
     """Regenerate the content of AUTHORS.rst."""
-
-    task = subprocess.Popen('git -C {0} log --pretty=format:"%aN" |'
-                            ' sort | uniq'.format(repository),
-                            shell=True,
-                            stdout=subprocess.PIPE)
+    # Strip the path to repository and get just the name
+    repository_name = repository.rstrip('/').split('/')[-1]
+    if repository_name in BASE_COMMITS:
+        start = BASE_COMMITS.get(repository_name)
+        task = subprocess.Popen(
+            'git -C {0} log {1}^..HEAD --pretty=format:"%aN" |'
+            ' sort | uniq'.format(repository, start),
+            shell=True,
+            stdout=subprocess.PIPE
+        )
+    else:
+        task = subprocess.Popen('git -C {0} log --pretty=format:"%aN" |'
+                                ' sort | uniq'.format(repository),
+                                shell=True,
+                                stdout=subprocess.PIPE)
     data = task.stdout.read()
     authors_list = data.decode('utf-8').split('\n')
 
