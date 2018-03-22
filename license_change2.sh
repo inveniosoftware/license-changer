@@ -10,39 +10,40 @@ main () {
         mkdir $HOME/$TEMPDIR
     fi
     declare -a repos=(
+        ### Those two don't have RTD-style documentation
+        ##"citeproc-py-styles"
+        ##"invenio-search-js"
         ### Initial repositories on the list stuff
-        #"dcxml"
-        #"citeproc-py-styles"
-        #"invenio-marc21"
-        #"invenio-theme"
-        #"invenio-search-js"
-        #"invenio-search-ui"
-        #"invenio-search"
-        #"invenio-rest"
-        #"invenio-records-ui"
-        #"invenio-records"
-        #"invenio-pidstore"
-        #"invenio-oauthclient"
-        #"invenio-oauth2server"
-        #"invenio-logging"
-        #"invenio-formatter"
+        "dcxml"
+        "invenio-marc21"
+        "invenio-theme"
+        "invenio-search-ui"
+        "invenio-search"
+        "invenio-rest"
+        "invenio-records-ui"
+        "invenio-records"
+        "invenio-pidstore"
+        "invenio-oauthclient"
+        "invenio-oauth2server"
+        "invenio-logging"
+        "invenio-formatter"
         "invenio-db"
-        #"invenio-config"
-        #"invenio-celery"
-        #"invenio-cache"
-        #"invenio-base"
-        #"invenio-assets"
-        #"invenio-app"
-        #"invenio-admin"
-        #"invenio-accounts"
-        #"invenio-access"
-        #"invenio-userprofiles"
-        #"invenio-records-rest"
-        #"invenio-oaiserver"
-        #"invenio-mail"
-        #"invenio-jsonschemas"
-        #"invenio-indexer"
-        #"invenio-i18n"
+        "invenio-config"
+        "invenio-celery"
+        "invenio-cache"
+        "invenio-base"
+        "invenio-assets"
+        "invenio-app"
+        "invenio-admin"
+        "invenio-accounts"
+        "invenio-access"
+        "invenio-userprofiles"
+        "invenio-records-rest"
+        "invenio-oaiserver"
+        "invenio-mail"
+        "invenio-jsonschemas"
+        "invenio-indexer"
+        "invenio-i18n"
     )
 
     for repo in "${repos[@]}"
@@ -59,18 +60,19 @@ main () {
             head -n -4 LICENSE > LICENSE2
             mv LICENSE2 LICENSE
             cat $CHANGER_DIR/license_rst_note >> $HOME/$TEMPDIR/$repo/docs/license.rst
-            python $HOME/$TEMPDIR/$repo/README.rst
+            python $CHANGER_DIR/add_license_badge.py $HOME/$TEMPDIR/$repo/README.rst
         else
             echo "There's no docs/. Skipping" $repo
         fi
+        ## NOTE: Uncomment to inspect all changes
+        # git diff
 
-        # git commit -a -m 'global: Updated AUTHORS.rst' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+        git commit -a -m 'global: Fixed MIT license and added shield badge' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 
-        # TODO: uncomment for actual live run
-        # git push origin release-1.0.0 --force
+        ## NOTE: uncomment to push to upstream
+        # git push origin master
     done
 
-    echo "All repos UPDATED"
 }
 
 main
