@@ -91,10 +91,13 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+"""
 
-In applying this license, CERN does not waive the privileges and immunities
-granted to it by virtue of its status as an Intergovernmental Organization or
-submit itself to any jurisdiction.
+LICENSE_RST_NOTE = """
+.. note::
+    In applying this license, CERN does not waive the privileges and immunities
+    granted to it by virtue of its status as an Intergovernmental Organization or
+    submit itself to any jurisdiction.
 """
 
 FIRST_YEAR_RE_PATTERN = r'^.*(Copyright \(C\) *)(?P<first_year>[0-9]+).*'
@@ -159,6 +162,7 @@ def change_license_for_docslicenserst_file(filename):
     fdesc.write('=======\n\n')
     fdesc.write('.. include:: ../LICENSE')
     fdesc.write('\n')
+    fdesc.write(LICENSE_RST_NOTE)
     fdesc.close()
 
 

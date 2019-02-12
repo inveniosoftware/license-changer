@@ -229,11 +229,21 @@ main () {
         fi
         git commit -a -m 'release: v1.0.0' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
 
+        if [ -f "$HOME/$TEMPDIR/$repo/README.rst" ]; then
+            python $CHANGER_DIR/add_license_badge.py $HOME/$TEMPDIR/$repo/README.rst
+        else
+            echo "There's no README.rst Skipping" $repo
+        fi
+        ## NOTE: Uncomment to inspect all changes
+        # git diff
+
+        git commit -a -m 'global: Added shield badge' --author='Invenio <info@inveniosoftware.org>' --no-gpg-sign &> /dev/null
+
         # TODO: Contributing guide temporarily disabled
         # update_contributing_file
 
         # TODO: uncomment for actual live run
-        git push upstream release-1.0.0 --force
+        # git push upstream release-1.0.0 --force
     done
     for repo in "${repos[@]}"
     do
