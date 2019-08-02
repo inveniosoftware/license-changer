@@ -1,5 +1,8 @@
+import os
 import re
+
 from textwrap import dedent
+
 ## Compiled regular expression pattern
 ## setup.py
 RE_DEV_STATUS = re.compile(r"(.*)('Development Status ::.*')(.*)")
@@ -182,11 +185,18 @@ def change_version_py(text):
 
 
 def update_manifest_in(text):
+    """Remove some files from the manifest and the repository/"""
     files_to_delete = set([
         '.lgtm',
         'MAINTAINERS',
         'RELEASE-NOTES.rst'
     ])
+
+    for file in files_to_delete:
+        try:
+            os.remove(file)
+        except FileNotFoundError:
+            pass
 
     new_text = []
     for line in text.split('\n'):
